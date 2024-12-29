@@ -47,7 +47,7 @@ This project is a **Real-Time Inventory Management System** designed to track an
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-repository/inventory-management.git
+git clone https://github.com/Abhinay2206/ims.git
 cd inventory-management
 ```
 
