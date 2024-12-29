@@ -26,12 +26,10 @@ This project is a **Real-Time Inventory Management System** designed to track an
 ### Frontend:
 - **React.js**: For building the user interface.
 - **Material-UI**: For UI components and styling.
-- **WebSocket (Socket.io)**: For real-time updates.
 
 ### Backend:
 - **Node.js**: Server-side logic.
 - **Express.js**: REST API framework.
-- **Socket.io**: For real-time communication.
 
 ### Database:
 - **MongoDB**: For storing product details, user data, and inventory records.
