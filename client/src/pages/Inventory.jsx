@@ -46,6 +46,8 @@ const Inventory = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const itemsPerPage = 5;
   const userRole = localStorage.getItem('userRole');
   const isAdmin = userRole === 'admin';
 
@@ -200,6 +202,17 @@ const Inventory = () => {
     window.URL.revokeObjectURL(url);
   };
 
+  const handleNextPage = () => {
+    setCurrentPage(prevPage => prevPage + 1);
+  };
+
+  const handlePrevPage = () => {
+    setCurrentPage(prevPage => Math.max(prevPage - 1, 0));
+  };
+
+  const totalPages = Math.ceil(filteredInventory.length / itemsPerPage);
+  const paginatedInventory = filteredInventory.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
+
   return (
     <Box sx={{ p: 4, bgcolor: '#f5f5f5', minHeight: '100vh' }}>
       <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'white' }}>
@@ -317,7 +330,7 @@ const Inventory = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredInventory.map((product) => (
+                {paginatedInventory.map((product) => (
                   <TableRow 
                     key={product.id} 
                     hover
@@ -398,6 +411,42 @@ const Inventory = () => {
             </Table>
           </TableContainer>
         </Card>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4, gap: 2 }}>
+          <Button
+            variant="contained"
+            onClick={handlePrevPage}
+            disabled={currentPage === 0}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+              py: 1,
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+            }}
+          >
+            Prev
+          </Button>
+          <Typography variant="body1">
+            Page {currentPage + 1} of {totalPages}
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={handleNextPage}
+            disabled={currentPage >= totalPages - 1}
+            sx={{
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+              py: 1,
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+            }}
+          >
+            Next
+          </Button>
+        </Box>
 
         {isAdmin && (
           <ProductDialog

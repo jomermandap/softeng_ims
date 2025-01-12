@@ -28,32 +28,44 @@ import {
   ListItemText,
   ListItemIcon,
   useTheme,
-  alpha
+  alpha,
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { 
   TrendingUp,
   TrendingDown,
-  Inventory2,
-  Assessment,
   Refresh,
-  Add,
   Warning,
-  BarChart,
-  Timeline,
-  LocalShipping,
-  Notifications,
   ErrorOutline,
-  ArrowForward
+  ArrowForward,
+  Search as SearchIcon,
+  Receipt
 } from '@mui/icons-material';
 
 const Dashboard = () => {
   const [inventory, setInventory] = useState([]);
+  const [filteredInventory, setFilteredInventory] = useState([]);
   const [lowStockItems, setLowStockItems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalValue, setTotalValue] = useState(0);
   const [stockTrend, setStockTrend] = useState(5.2);
   const [showAlerts, setShowAlerts] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState('all');
+  const [tablePage, setTablePage] = useState(0);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [stockUpdateDialog, setStockUpdateDialog] = useState(false);
+  const [newStockValue, setNewStockValue] = useState('');
+  const [billDialog, setBillDialog] = useState(false);
+  const [saleQuantity, setSaleQuantity] = useState('');
+  const [billNumber, setBillNumber] = useState('');
+  const itemsPerPage = 5;
   const navigate = useNavigate();
   const userRole = localStorage.getItem('userRole');
   const theme = useTheme();
@@ -77,6 +89,7 @@ const Dashboard = () => {
           }));
           
           setInventory(products);
+          setFilteredInventory(products);
           setLowStockItems(products.filter(item => item.stock < item.lowStockThreshold));
           setTotalValue(products.reduce((acc, item) => acc + (item.stock * item.price), 0));
         } else {
@@ -98,12 +111,127 @@ const Dashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const filtered = inventory.filter(item => {
+      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          item.sku.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = category === 'all' || item.category === category;
+      return matchesSearch && matchesCategory;
+    });
+    setFilteredInventory(filtered);
+    setTablePage(0); // Reset table page when filters change
+  }, [searchTerm, category, inventory]);
+
   const getStockPercentage = (stock, threshold) => (stock / threshold) * 100;
 
   const refreshData = () => {
     setIsLoading(true);
     setTimeout(() => setIsLoading(false), 1000);
   };
+
+  const handleNextPage = () => {
+    if ((currentPage + 1) * itemsPerPage < lowStockItems.length) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleTableNextPage = () => {
+    if ((tablePage + 1) * itemsPerPage < filteredInventory.length) {
+      setTablePage(tablePage + 1);
+    }
+  };
+
+  const handleTablePrevPage = () => {
+    if (tablePage > 0) {
+      setTablePage(tablePage - 1);
+    }
+  };
+
+  const handleUpdateStock = async () => {
+    if (!selectedProduct || !newStockValue) return;
+
+    try {
+      const response = await fetch(`http://localhost:5017/api/product/update/${selectedProduct.sku}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stock: parseInt(newStockValue)
+        })
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updatedInventory = inventory.map(item => 
+          item.sku === selectedProduct.sku ? {...item, stock: parseInt(newStockValue)} : item
+        );
+        setInventory(updatedInventory);
+        setStockUpdateDialog(false);
+        setSelectedProduct(null);
+        setNewStockValue('');
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
+    }
+  };
+
+  const generateBillNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return `BILL-${timestamp}-${random}`;
+  };
+
+  const handleGenerateBill = async () => {
+    if (!selectedProduct || !saleQuantity) return;
+
+    const newBillNumber = generateBillNumber();
+    setBillNumber(newBillNumber);
+
+    try {
+      // Update stock after sale
+      const newStock = selectedProduct.stock - parseInt(saleQuantity);
+      const response = await fetch(`http://localhost:5017/api/product/update/${selectedProduct.sku}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          stock: newStock
+        })
+      });
+
+      if (response.ok) {
+        // Update local state
+        const updatedInventory = inventory.map(item => 
+          item.sku === selectedProduct.sku ? {...item, stock: newStock} : item
+        );
+        setInventory(updatedInventory);
+        setBillDialog(false);
+        setSelectedProduct(null);
+        setSaleQuantity('');
+        
+        // Here you could also save the bill details to your database
+        // and/or open a print dialog
+      }
+    } catch (error) {
+      console.error('Error generating bill:', error);
+    }
+  };
+
+  const totalPages = Math.ceil(lowStockItems.length / itemsPerPage);
+  const totalTablePages = Math.ceil(filteredInventory.length / itemsPerPage);
+  
+  const paginatedInventory = filteredInventory.slice(
+    tablePage * itemsPerPage,
+    (tablePage + 1) * itemsPerPage
+  );
 
   return (
     <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#f5f5f9', minHeight: '100vh' }}>
@@ -149,6 +277,59 @@ const Dashboard = () => {
         </Tooltip>
       </Box>
 
+      {/* Stock Update Dialog */}
+      <Dialog open={stockUpdateDialog} onClose={() => setStockUpdateDialog(false)}>
+        <DialogTitle>Update Stock</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="New Stock Value"
+            type="number"
+            fullWidth
+            value={newStockValue}
+            onChange={(e) => setNewStockValue(e.target.value)}
+          />
+          <Button onClick={handleUpdateStock} variant="contained" sx={{ mt: 2 }}>
+            Update Stock
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generate Bill Dialog */}
+      <Dialog open={billDialog} onClose={() => setBillDialog(false)}>
+        <DialogTitle>Generate Bill</DialogTitle>
+        <DialogContent>
+          <Typography variant="subtitle1" sx={{ mb: 2 }}>
+            Product: {selectedProduct?.name}
+          </Typography>
+          <Typography variant="subtitle2" sx={{ mb: 2 }}>
+            Available Stock: {selectedProduct?.stock}
+          </Typography>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Sale Quantity"
+            type="number"
+            fullWidth
+            value={saleQuantity}
+            onChange={(e) => setSaleQuantity(e.target.value)}
+            inputProps={{ max: selectedProduct?.stock }}
+          />
+          <Typography variant="subtitle2" sx={{ mt: 2 }}>
+            Total Amount: ₹{selectedProduct?.price * saleQuantity || 0}
+          </Typography>
+          <Button 
+            onClick={handleGenerateBill} 
+            variant="contained" 
+            sx={{ mt: 2 }}
+            disabled={!saleQuantity || saleQuantity > selectedProduct?.stock}
+          >
+            Generate Bill
+          </Button>
+        </DialogContent>
+      </Dialog>
+
       {/* Low Stock Alerts Dialog */}
       <Dialog 
         open={showAlerts} 
@@ -176,7 +357,7 @@ const Dashboard = () => {
         </DialogTitle>
         <DialogContent sx={{ p: 3 }}>
           <List>
-            {lowStockItems.map((item) => (
+            {lowStockItems.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage).map((item) => (
               <ListItem 
                 key={item.id}
                 sx={{ 
@@ -218,24 +399,19 @@ const Dashboard = () => {
                     </Box>
                   }
                 />
-                {userRole === 'admin' && (
-                  <Button 
-                    variant="contained" 
-                    color="warning" 
-                    size="small"
-                    sx={{ 
-                      ml: 2,
-                      borderRadius: 2,
-                      boxShadow: '0 4px 14px 0 rgba(255, 171, 0, 0.39)'
-                    }}
-                    endIcon={<ArrowForward />}
-                  >
-                    Order More
-                  </Button>
-                )}
+                
               </ListItem>
             ))}
           </List>
+          {lowStockItems.length > (currentPage + 1) * itemsPerPage && (
+            <Button 
+              variant="outlined" 
+              onClick={handleNextPage} 
+              sx={{ mt: 2 }}
+            >
+              Next
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
 
@@ -267,7 +443,7 @@ const Dashboard = () => {
                   <Typography color="text.secondary" gutterBottom variant="subtitle2">
                     Total Products
                   </Typography>
-                  <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
                     {inventory.length}
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
@@ -292,7 +468,7 @@ const Dashboard = () => {
                   <Typography color="warning.main" gutterBottom variant="subtitle2">
                     Low Stock Items
                   </Typography>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: 'warning.main', mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'warning.main', mb: 1 }}>
                     {lowStockItems.length}
                   </Typography>
                   <Typography variant="body2" color="warning.dark">
@@ -317,13 +493,13 @@ const Dashboard = () => {
                   <Typography color="success.main" gutterBottom variant="subtitle2">
                     Total Stock Value
                   </Typography>
-                  <Typography variant="h3" sx={{ fontWeight: 600, color: 'success.main', mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 600, color: 'success.main', mb: 1 }}>
                   ₹{Math.floor(totalValue).toLocaleString()}
                   </Typography>
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     {stockTrend >= 0 ? 
-                      <TrendingUp color="success" sx={{ fontSize: 20 }} /> : 
-                      <TrendingDown color="error" sx={{ fontSize: 20 }} />
+                      <TrendingUp color="success" sx={{ fontSize: 18 }} /> : 
+                      <TrendingDown color="error" sx={{ fontSize: 18 }} />
                     }
                     <Typography variant="body2" color="success.dark" sx={{ ml: 1 }}>
                       {Math.abs(stockTrend)}% from last month
@@ -348,7 +524,7 @@ const Dashboard = () => {
                   <Typography color="info.main" gutterBottom variant="subtitle2">
                     Average Stock Level
                   </Typography>
-                  <Typography variant="h3" sx={{ fontWeight: 700, color: 'info.main', mb: 1 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 700, color: 'info.main', mb: 1 }}>
                     {Math.round(inventory.reduce((acc, item) => acc + item.stock, 0) / inventory.length)}
                   </Typography>
                   <Typography variant="body2" color="info.dark">
@@ -358,42 +534,42 @@ const Dashboard = () => {
               </Card>
             </Grid>
 
-            {/* Low Stock Alerts */}
+            {/* Search and Filter */}
             <Grid item xs={12}>
-              {lowStockItems.length > 0 && (
-                <Alert 
-                  severity="warning" 
-                  icon={<Warning />}
+              <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+                <TextField
+                  size="small"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: <SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />,
+                  }}
                   sx={{ 
-                    mb: 3, 
-                    borderRadius: 3,
-                    boxShadow: '0 4px 14px 0 rgba(255, 171, 0, 0.1)',
-                    '.MuiAlert-message': {
-                      width: '100%'
+                    width: 300,
+                    '& .MuiOutlinedInput-root': {
+                      borderRadius: 2,
+                      bgcolor: 'background.paper',
                     }
                   }}
-                  action={
-                    userRole === 'admin' && (
-                      <Button 
-                        color="warning" 
-                        variant="contained"
-                        size="small"
-                        sx={{
-                          borderRadius: 2,
-                          boxShadow: '0 4px 14px 0 rgba(255, 171, 0, 0.39)'
-                        }}
-                      >
-                        Order More
-                      </Button>
-                    )
-                  }
-                >
-                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                    Low Stock Alert!
-                  </Typography>
-                  {lowStockItems.length} items are running low on stock and need attention
-                </Alert>
-              )}
+                />
+                <FormControl size="small" sx={{ width: 200 }}>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={category}
+                    label="Category"
+                    onChange={(e) => setCategory(e.target.value)}
+                    sx={{ 
+                      borderRadius: 2,
+                      bgcolor: 'background.paper'
+                    }}
+                  >
+                    <MenuItem value="all">All Categories</MenuItem>
+                    <MenuItem value="Electronics">Electronics</MenuItem>
+                    <MenuItem value="Accessories">Accessories</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
             </Grid>
 
             {/* Inventory Table */}
@@ -415,10 +591,11 @@ const Dashboard = () => {
                       <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>Stock Level</TableCell>
                       <TableCell align="right" sx={{ fontWeight: 600, py: 2 }}>Price</TableCell>
                       <TableCell sx={{ fontWeight: 600, py: 2 }}>Status</TableCell>
+                      <TableCell sx={{ fontWeight: 600, py: 2 }}>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {inventory.map((item) => (
+                    {paginatedInventory.map((item) => (
                       <TableRow 
                         key={item.id}
                         hover
@@ -481,99 +658,84 @@ const Dashboard = () => {
                             }}
                           />
                         </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={() => {
+                                setSelectedProduct(item);
+                                setStockUpdateDialog(true);
+                              }}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: 'none'
+                              }}
+                            >
+                              Update Stock
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              startIcon={<Receipt />}
+                              onClick={() => {
+                                setSelectedProduct(item);
+                                setBillDialog(true);
+                              }}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                bgcolor: theme.palette.success.main,
+                                '&:hover': {
+                                  bgcolor: theme.palette.success.dark
+                                }
+                              }}
+                            >
+                              Generate Bill
+                            </Button>
+                          </Box>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
                 </Table>
               </TableContainer>
-            </Grid>
-
-            {/* Enhanced Quick Actions */}
-            <Grid item xs={12}>
-              <Box sx={{ mt: 4, display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 3 }}>
-                <Card 
-                  sx={{ 
-                    bgcolor: 'primary.main',
-                    color: 'white',
-                    borderRadius: 4,
-                    transition: 'all 0.3s',
-                    boxShadow: '0 4px 14px 0 rgba(24, 144, 255, 0.39)',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      cursor: 'pointer',
-                      boxShadow: '0 6px 20px 0 rgba(24, 144, 255, 0.39)'
-                    }
+              
+              {/* Pagination */}
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 4, gap: 2 }}>
+                <Button
+                  variant="contained"
+                  onClick={handleTablePrevPage}
+                  disabled={tablePage === 0}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1,
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
                   }}
                 >
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 3 }}>
-                    <BarChart sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Analytics Dashboard</Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>View detailed analytics and trends</Typography>
-                  </CardContent>
-                </Card>
-
-                <Card 
-                  sx={{ 
-                    bgcolor: 'success.main',
-                    color: 'white',
-                    borderRadius: 4,
-                    transition: 'all 0.3s',
-                    boxShadow: '0 4px 14px 0 rgba(76, 175, 80, 0.39)',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      cursor: 'pointer',
-                      boxShadow: '0 6px 20px 0 rgba(76, 175, 80, 0.39)'
-                    }
+                  Prev
+                </Button>
+                <Typography variant="body1">
+                  Page {tablePage + 1} of {totalTablePages}
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={handleTableNextPage}
+                  disabled={tablePage >= totalTablePages - 1}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 3,
+                    py: 1,
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
                   }}
                 >
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 3 }}>
-                    <Timeline sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Stock Forecasting</Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>Predict future inventory needs</Typography>
-                  </CardContent>
-                </Card>
-
-                <Card 
-                  sx={{ 
-                    bgcolor: 'warning.main',
-                    color: 'white',
-                    borderRadius: 4,
-                    transition: 'all 0.3s',
-                    boxShadow: '0 4px 14px 0 rgba(255, 171, 0, 0.39)',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      cursor: 'pointer',
-                      boxShadow: '0 6px 20px 0 rgba(255, 171, 0, 0.39)'
-                    }
-                  }}
-                >
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 3 }}>
-                    <LocalShipping sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Supplier Portal</Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>Manage supplier relationships</Typography>
-                  </CardContent>
-                </Card>
-
-                <Card 
-                  sx={{ 
-                    bgcolor: 'error.main',
-                    color: 'white',
-                    borderRadius: 4,
-                    transition: 'all 0.3s',
-                    boxShadow: '0 4px 14px 0 rgba(244, 67, 54, 0.39)',
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      cursor: 'pointer',
-                      boxShadow: '0 6px 20px 0 rgba(244, 67, 54, 0.39)'
-                    }
-                  }}
-                >
-                  <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', p: 3 }}>
-                    <Notifications sx={{ fontSize: 48, mb: 2 }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Alert Center</Typography>
-                    <Typography variant="body2" sx={{ opacity: 0.8 }}>View and manage notifications</Typography>
-                  </CardContent>
-                </Card>
+                  Next
+                </Button>
               </Box>
             </Grid>
           </Grid>

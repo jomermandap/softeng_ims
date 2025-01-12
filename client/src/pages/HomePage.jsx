@@ -14,7 +14,6 @@ import {
   IconButton,
   useTheme,
   alpha,
-  Badge
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -22,8 +21,6 @@ import {
   Inventory2,
   Logout,
   Menu as MenuIcon,
-  Notifications,
-  Search,
   BarChart,
   Group,
   Warehouse
@@ -240,24 +237,6 @@ const HomePage = () => {
             <MenuIcon />
           </IconButton>
           <Box sx={{ flexGrow: 1 }} />
-          <IconButton sx={{ 
-            mr: 1,
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            }
-          }}>
-            <Search />
-          </IconButton>
-          <IconButton sx={{ 
-            mr: 2,
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-            }
-          }}>
-            <Badge badgeContent={3} color="error">
-              <Notifications />
-            </Badge>
-          </IconButton>
           <Avatar sx={{ 
             bgcolor: theme.palette.primary.main,
             cursor: 'pointer',
