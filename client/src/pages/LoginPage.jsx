@@ -13,6 +13,7 @@ import {
   Box,
   useTheme,
   useMediaQuery,
+  Stack
 } from '@mui/material';
 import axios from 'axios';
 import InventoryIcon from '@mui/icons-material/Inventory';
@@ -158,25 +159,45 @@ const LoginPage = () => {
               sx={{ mb: 4 }}
             />
 
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              disabled={!loginType}
-              sx={{
-                py: 1.8,
-                borderRadius: '12px',
-                fontSize: '1.1rem',
-                textTransform: 'none',
-                fontWeight: 600,
-                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-                '&:hover': {
-                  boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
-                }
-              }}
-            >
-              Sign In to Dashboard
-            </Button>
+            <Stack spacing={2}>
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                disabled={!loginType}
+                sx={{
+                  py: 1.8,
+                  borderRadius: '12px',
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                  '&:hover': {
+                    boxShadow: '0 6px 16px rgba(0, 0, 0, 0.25)',
+                  }
+                }}
+              >
+                Sign In to Dashboard
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                onClick={() => navigate('/request')}
+                sx={{
+                  py: 1.8,
+                  borderRadius: '12px',
+                  fontSize: '1.1rem',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  '&:hover': {
+                    backgroundColor: theme.palette.primary.main + '10'
+                  }
+                }}
+              >
+                Request New Manager Access
+              </Button>
+            </Stack>
 
           </Box>
         </Box>

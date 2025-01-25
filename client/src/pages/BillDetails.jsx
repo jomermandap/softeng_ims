@@ -20,7 +20,9 @@ import {
   DialogTitle,
   DialogContent,
   Tooltip,
-  LinearProgress
+  LinearProgress,
+  Stack,
+  Button
 } from '@mui/material';
 import { 
   Search as SearchIcon, 
@@ -29,9 +31,11 @@ import {
   Download as DownloadIcon,
   FilterList as FilterIcon,
   Cancel as CancelIcon,
-  GetApp as ExportIcon
+  GetApp as ExportIcon,
+  Warning as WarningIcon,
+  Person as PersonIcon
 } from '@mui/icons-material';
-import { format } from 'date-fns';
+import { format, differenceInDays } from 'date-fns';
 import { saveAs } from 'file-saver';
 
 const BillPage = () => {
@@ -41,12 +45,18 @@ const BillPage = () => {
   const [selectedBill, setSelectedBill] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [dueSummary, setDueSummary] = useState({
+    totalVendors: 0,
+    totalAmount: 0,
+    vendors: []
+  });
   const [filter, setFilter] = useState({
     minAmount: '',
     maxAmount: '',
     dateFrom: '',
     dateTo: ''
   });
+  const [vendorDialogOpen, setVendorDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,6 +81,41 @@ const BillPage = () => {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    // Calculate due summary
+    const dueBills = bills.filter(bill => bill.paymentType?.toLowerCase() === 'due');
+    const vendorMap = new Map();
+
+    dueBills.forEach(bill => {
+      const daysOverdue = differenceInDays(new Date(), new Date(bill.createdAt));
+      if (!vendorMap.has(bill.vendorName)) {
+        vendorMap.set(bill.vendorName, {
+          totalAmount: bill.totalAmount,
+          daysOverdue,
+          billCount: 1
+        });
+      } else {
+        const vendor = vendorMap.get(bill.vendorName);
+        vendorMap.set(bill.vendorName, {
+          totalAmount: vendor.totalAmount + bill.totalAmount,
+          daysOverdue: Math.max(vendor.daysOverdue, daysOverdue),
+          billCount: vendor.billCount + 1
+        });
+      }
+    });
+
+    const totalAmount = dueBills.reduce((sum, bill) => sum + bill.totalAmount, 0);
+
+    setDueSummary({
+      totalVendors: vendorMap.size,
+      totalAmount,
+      vendors: Array.from(vendorMap.entries()).map(([name, data]) => ({
+        name,
+        ...data
+      }))
+    });
+  }, [bills]);
 
   useEffect(() => {
     const filtered = bills.filter(bill => {
@@ -193,12 +238,108 @@ const BillPage = () => {
       p: 4, 
       bgcolor: 'background.default', 
       minHeight: '100vh',
-      background: 'linear-gradient(120deg, #fdfbfb 0%, #ebedee 100%)'
+      background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
     }}>
+      {/* Due Summary Cards */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={4}>
+          <Card 
+            elevation={0}
+            sx={{
+              borderRadius: '16px',
+              bgcolor: 'rgba(255, 72, 66, 0.08)', 
+              p: 3,
+              height: '75%',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 4px 20px rgba(255, 72, 66, 0.15)'
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <WarningIcon color="error" />
+              <Typography variant="h6" color="error.main">Due Summary</Typography>
+            </Stack>
+            <Typography variant="h4" sx={{ mt: 3, mb: 1, color: 'error.main', fontWeight: 700 }}>
+              {dueSummary.totalVendors}
+            </Typography>
+            <Typography variant="body1" color="error.main" sx={{ opacity: 0.8 }}>
+              Vendors with Due Payments
+            </Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card 
+            elevation={0}
+            sx={{
+              borderRadius: '16px',
+              bgcolor: 'rgba(255, 171, 0, 0.08)',
+              p: 3,
+              height: '75%',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 4px 20px rgba(255, 171, 0, 0.15)'
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              
+              <Typography variant="h6" color="warning.main">Total Due Amount</Typography>
+            </Stack>
+            <Typography variant="h4" sx={{ mt: 3, mb: 1, color: 'warning.main', fontWeight: 700 }}>
+              ₹{dueSummary.totalAmount.toFixed(2)}
+            </Typography>
+            <Typography variant="body1" color="warning.main" sx={{ opacity: 0.8 }}>
+              Outstanding Payments
+            </Typography>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <Card 
+            elevation={0}
+            sx={{
+              borderRadius: '16px', 
+              bgcolor: 'rgba(24, 144, 255, 0.08)',
+              p: 3,
+              height: '75%',
+              transition: 'all 0.2s ease-in-out',
+              '&:hover': {
+                transform: 'translateY(-4px)',
+                boxShadow: '0 4px 20px rgba(24, 144, 255, 0.15)'
+              }
+            }}
+          >
+            <Stack direction="row" alignItems="center" spacing={2}>
+              <PersonIcon color="info" />
+              <Typography variant="h6" color="info.main">Vendor Details</Typography>
+            </Stack>
+            <Box sx={{ mt: 3 }}>
+              <Button
+                startIcon={<PersonIcon />}
+                onClick={() => setVendorDialogOpen(true)}
+                variant="contained"
+                color="info"
+                fullWidth
+                sx={{
+                  borderRadius: '8px',
+                  py: 1,
+                  textTransform: 'none',
+                  fontWeight: 600
+                }}
+              >
+                View All Vendors
+              </Button>
+            </Box>
+          </Card>
+        </Grid>
+      </Grid>
+
       <Card 
         elevation={0} 
         sx={{ 
-          borderRadius: 4,
+          borderRadius: '24px',
           overflow: 'hidden',
           backdropFilter: 'blur(20px)',
           backgroundColor: 'rgba(255, 255, 255, 0.9)',
@@ -224,15 +365,17 @@ const BillPage = () => {
                 }}
                 sx={{ 
                   '& .MuiOutlinedInput-root': {
-                    borderRadius: 3,
+                    borderRadius: '16px',
                     backgroundColor: 'rgba(255, 255, 255, 0.8)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
                       backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                      transform: 'translateY(-2px)'
                     },
                     '&.Mui-focused': {
                       backgroundColor: '#fff',
-                      boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)'
+                      boxShadow: '0 0 0 2px rgba(25, 118, 210, 0.2)',
+                      transform: 'translateY(-2px)'
                     }
                   }
                 }}
@@ -245,7 +388,12 @@ const BillPage = () => {
                     sx={{ 
                       bgcolor: 'primary.soft',
                       color: 'primary.main',
-                      '&:hover': { bgcolor: 'primary.softHover' }
+                      borderRadius: '12px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': { 
+                        bgcolor: 'primary.softHover',
+                        transform: 'translateY(-2px)'
+                      }
                     }}
                   >
                     <FilterIcon />
@@ -258,7 +406,12 @@ const BillPage = () => {
                       sx={{ 
                         bgcolor: 'error.soft',
                         color: 'error.main',
-                        '&:hover': { bgcolor: 'error.softHover' }
+                        borderRadius: '12px',
+                        transition: 'all 0.3s ease',
+                        '&:hover': { 
+                          bgcolor: 'error.softHover',
+                          transform: 'translateY(-2px)'
+                        }
                       }}
                     >
                       <CancelIcon />
@@ -271,7 +424,12 @@ const BillPage = () => {
                     sx={{ 
                       bgcolor: 'success.soft',
                       color: 'success.main',
-                      '&:hover': { bgcolor: 'success.softHover' }
+                      borderRadius: '12px',
+                      transition: 'all 0.3s ease',
+                      '&:hover': { 
+                        bgcolor: 'success.softHover',
+                        transform: 'translateY(-2px)'
+                      }
                     }}
                   >
                     <ExportIcon />
@@ -282,13 +440,21 @@ const BillPage = () => {
           </Grid>
 
           {loading ? (
-            <LinearProgress sx={{ borderRadius: 1 }} />
+            <LinearProgress 
+              sx={{ 
+                borderRadius: '8px',
+                height: '8px',
+                '.MuiLinearProgress-bar': {
+                  borderRadius: '8px'
+                }
+              }} 
+            />
           ) : (
             <TableContainer 
               component={Paper} 
               elevation={0}
               sx={{ 
-                borderRadius: 3,
+                borderRadius: '20px',
                 border: '1px solid rgba(0, 0, 0, 0.08)',
                 overflow: 'hidden'
               }}
@@ -296,12 +462,12 @@ const BillPage = () => {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: 'rgba(0, 0, 0, 0.02)' }}>
-                    <TableCell sx={{ fontWeight: 600 }}>Bill Number</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Product Name</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>Quantity</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>Total Amount</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                    <TableCell align="center" sx={{ fontWeight: 600 }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Bill Number</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Product Name</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Quantity</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Total Amount</TableCell>
+                    <TableCell sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Date</TableCell>
+                    <TableCell align="center" sx={{ fontWeight: 600, fontSize: '0.875rem' }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -325,13 +491,12 @@ const BillPage = () => {
                         <TableCell>
                           <Chip 
                             label={bill.billNumber} 
-                            color={isDue ? 'error.main' : 'primary.main'} 
+                            color={isDue ? 'error' : 'primary'} 
                             variant="outlined" 
                             size="small"
                             sx={{ 
-                              borderRadius: 2,
+                              borderRadius: '12px',
                               fontWeight: 500,
-                              borderColor: isDue ? 'error.main' : 'primary.main', 
                               '& .MuiChip-label': { px: 2 }
                             }}
                           />
@@ -345,9 +510,9 @@ const BillPage = () => {
                               color: isDue ? 'error.main' : 'success.main',
                               fontWeight: 600,
                               bgcolor: isDue ? 'error.soft' : 'success.soft',
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: 2,
+                              px: 2,
+                              py: 1,
+                              borderRadius: '12px',
                               fontSize: '0.875rem'
                             }}
                           >
@@ -374,7 +539,12 @@ const BillPage = () => {
                                 sx={{ 
                                   bgcolor: 'primary.soft',
                                   color: 'primary.main',
-                                  '&:hover': { bgcolor: 'primary.softHover' }
+                                  borderRadius: '10px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': { 
+                                    bgcolor: 'primary.softHover',
+                                    transform: 'translateY(-2px)'
+                                  }
                                 }}
                               >
                                 <ViewIcon fontSize="small" />
@@ -387,7 +557,12 @@ const BillPage = () => {
                                 sx={{ 
                                   bgcolor: 'secondary.soft',
                                   color: 'secondary.main',
-                                  '&:hover': { bgcolor: 'secondary.softHover' }
+                                  borderRadius: '10px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': { 
+                                    bgcolor: 'secondary.softHover',
+                                    transform: 'translateY(-2px)'
+                                  }
                                 }}
                               >
                                 <PrintIcon fontSize="small" />
@@ -400,7 +575,12 @@ const BillPage = () => {
                                 sx={{ 
                                   bgcolor: 'success.soft',
                                   color: 'success.main',
-                                  '&:hover': { bgcolor: 'success.softHover' }
+                                  borderRadius: '10px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': { 
+                                    bgcolor: 'success.softHover',
+                                    transform: 'translateY(-2px)'
+                                  }
                                 }}
                               >
                                 <DownloadIcon fontSize="small" />
@@ -425,8 +605,8 @@ const BillPage = () => {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 4,
-            backgroundImage: 'linear-gradient(to right, #fff 0%, #f8f9fa 100%)',
+            borderRadius: '24px',
+            backgroundImage: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
             boxShadow: '0 24px 48px rgba(0,0,0,0.1)',
             overflow: 'hidden'
           }
@@ -434,7 +614,7 @@ const BillPage = () => {
       >
         <DialogTitle 
           sx={{ 
-            background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+            background: 'linear-gradient(135deg, #1976d2 30%, #2196f3 90%)',
             color: '#fff',
             display: 'flex', 
             justifyContent: 'space-between', 
@@ -467,7 +647,7 @@ const BillPage = () => {
                 <Box sx={{ 
                   bgcolor: 'background.paper', 
                   p: 3, 
-                  borderRadius: 3,
+                  borderRadius: '20px',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                   border: '1px solid rgba(0,0,0,0.08)'
                 }}>
@@ -480,8 +660,8 @@ const BillPage = () => {
                       size="small" 
                       sx={{ 
                         ml: 2, 
-                        borderRadius: 2,
-                        borderColor: selectedBill.paymentType?.toLowerCase() === 'due' ? 'error.main' : 'primary.main' // Change border color if due
+                        borderRadius: '12px',
+                        borderColor: selectedBill.paymentType?.toLowerCase() === 'due' ? 'error.main' : 'primary.main'
                       }}
                     />
                   </Typography>
@@ -503,7 +683,7 @@ const BillPage = () => {
                 <Box sx={{ 
                   bgcolor: 'background.paper', 
                   p: 3, 
-                  borderRadius: 3,
+                  borderRadius: '20px',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
                   border: '1px solid rgba(0,0,0,0.08)'
                 }}>
@@ -517,9 +697,9 @@ const BillPage = () => {
               </Grid>
               <Grid item xs={12}>
                 <Box sx={{ 
-                  background: 'linear-gradient(45deg, #1976d2 30%, #2196f3 90%)',
+                  background: 'linear-gradient(135deg, #1976d2 30%, #2196f3 90%)',
                   p: 3, 
-                  borderRadius: 3,
+                  borderRadius: '20px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
@@ -534,6 +714,72 @@ const BillPage = () => {
               </Grid>
             </Grid>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Vendors Dialog */}
+      <Dialog
+        open={vendorDialogOpen}
+        onClose={() => setVendorDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '24px',
+            backgroundImage: 'linear-gradient(135deg, #fff 0%, #f8f9fa 100%)',
+            boxShadow: '0 24px 48px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle 
+          sx={{ 
+            background: 'linear-gradient(135deg, #1976d2 30%, #2196f3 90%)',
+            color: '#fff',
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            p: 3
+          }}
+        >
+          <Typography variant="h6" sx={{ fontWeight: 600 }}>
+            Vendor List
+          </Typography>
+          <IconButton 
+            onClick={() => setVendorDialogOpen(false)}
+            sx={{ 
+              color: '#fff',
+              '&:hover': { 
+                bgcolor: 'rgba(255,255,255,0.2)' 
+              }
+            }}
+          >
+            <CancelIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ p: 4 }}>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Vendor Name</TableCell>
+                  <TableCell align="right">Total Due Amount</TableCell>
+                  <TableCell align="right">Days Overdue</TableCell>
+                  <TableCell align="right">Bill Count</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {dueSummary.vendors.map((vendor, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{vendor.name}</TableCell>
+                    <TableCell align="right">₹{vendor.totalAmount.toFixed(2)}</TableCell>
+                    <TableCell align="right">{vendor.daysOverdue}</TableCell>
+                    <TableCell align="right">{vendor.billCount}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         </DialogContent>
       </Dialog>
     </Box>

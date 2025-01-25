@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from pymongo import MongoClient
 from model import ComprehensiveRecommendationModel
@@ -47,6 +47,24 @@ def get_product_bundles():
     bundle_recs = recommender.recommend_product_bundles()
     
     return jsonify(bundle_recs)
+
+@app.route('/product-recommendation/<sku>', methods=['GET'])
+def get_product_recommendation(sku):
+    # Fetch data from MongoDB
+    bills_data = list(bills_collection.find())
+    products_data = list(products_collection.find())
+    market_demand_data = list(market_demand_collection.find())
+    
+    # Initialize recommendation model
+    recommender = ComprehensiveRecommendationModel(bills_data, products_data, market_demand_data)
+    
+    # Get recommendation for specific product
+    product_rec = recommender.get_product_recommendation(sku)
+    
+    if product_rec:
+        return jsonify(product_rec)
+    else:
+        return jsonify({"error": "Product not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

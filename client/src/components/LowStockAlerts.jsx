@@ -36,25 +36,41 @@ const LowStockAlertsDialog = ({
       fullWidth
       PaperProps={{
         sx: {
-          borderRadius: 3,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          borderRadius: 4,
+          boxShadow: '0 12px 48px rgba(0,0,0,0.15)',
+          background: 'linear-gradient(to bottom, #ffffff, #f8f9fa)'
         }
       }}
     >
-      <DialogTitle sx={{ pb: 2 }}>
+      <DialogTitle sx={{ pb: 3, pt: 3 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Inventory sx={{ color: theme.palette.primary.main }} />
-            <Typography variant="h5" fontWeight={600}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box
+              sx={{
+                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                p: 1.5,
+                borderRadius: 2,
+                display: 'flex'
+              }}
+            >
+              <Inventory sx={{ 
+                color: theme.palette.primary.main,
+                fontSize: 28
+              }} />
+            </Box>
+            <Typography variant="h5" fontWeight={700} sx={{ letterSpacing: -0.5 }}>
               Low Stock Alerts
             </Typography>
           </Box>
           <IconButton 
             onClick={() => setAlertsDialog(false)}
             sx={{
+              bgcolor: alpha(theme.palette.grey[500], 0.08),
               '&:hover': {
                 bgcolor: alpha(theme.palette.error.main, 0.1),
-                color: theme.palette.error.main
+                color: theme.palette.error.main,
+                transform: 'rotate(90deg)',
+                transition: 'all 0.3s ease-in-out'
               }
             }}
           >
@@ -62,21 +78,24 @@ const LowStockAlertsDialog = ({
           </IconButton>
         </Stack>
       </DialogTitle>
-      <Divider />
-      <DialogContent sx={{ pt: 2 }}>
+      <Divider sx={{ opacity: 0.5 }} />
+      <DialogContent sx={{ pt: 3, pb: 4 }}>
         <List>
           {lowStockItems.map((item) => (
             <Paper
               key={item.id}
               elevation={0}
               sx={{
-                mb: 2,
-                p: 2,
-                border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.warning.main, 0.02),
+                mb: 2.5,
+                p: 2.5,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+                borderRadius: 3,
+                bgcolor: alpha(theme.palette.warning.light, 0.03),
+                transition: 'all 0.2s ease-in-out',
                 '&:hover': {
-                  bgcolor: alpha(theme.palette.warning.main, 0.05),
+                  bgcolor: alpha(theme.palette.warning.light, 0.08),
+                  transform: 'translateX(4px)',
+                  boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.1)}`
                 }
               }}
             >
@@ -84,46 +103,56 @@ const LowStockAlertsDialog = ({
                 <ListItemIcon>
                   <Warning sx={{ 
                     color: theme.palette.warning.main,
-                    animation: 'pulse 2s infinite',
+                    fontSize: 28,
+                    animation: 'pulse 2.5s infinite',
                     '@keyframes pulse': {
-                      '0%': { opacity: 1 },
-                      '50%': { opacity: 0.5 },
-                      '100%': { opacity: 1 }
+                      '0%': { opacity: 1, transform: 'scale(1)' },
+                      '50%': { opacity: 0.6, transform: 'scale(0.95)' },
+                      '100%': { opacity: 1, transform: 'scale(1)' }
                     }
                   }} />
                 </ListItemIcon>
                 <ListItemText
                   primary={
-                    <Typography variant="subtitle1" fontWeight={500}>
+                    <Typography variant="h6" fontWeight={600} sx={{ mb: 0.5 }}>
                       {item.name}
                     </Typography>
                   }
                   secondary={
-                    <Box sx={{ mt: 0.5 }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Current Stock: <Box component="span" sx={{ color: 'error.main', fontWeight: 500 }}>{item.stock}</Box>
-                        {' | '}
-                        Threshold: <Box component="span" sx={{ color: 'warning.main', fontWeight: 500 }}>{item.lowStockThreshold}</Box>
+                    <Box sx={{ mt: 1 }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: alpha(theme.palette.text.secondary, 0.85),
+                          fontSize: '0.95rem'
+                        }}
+                      >
+                        Current Stock: <Box component="span" sx={{ color: 'error.main', fontWeight: 600 }}>{item.stock}</Box>
+                        {' • '}
+                        Threshold: <Box component="span" sx={{ color: 'warning.main', fontWeight: 600 }}>{item.lowStockThreshold}</Box>
                       </Typography>
                     </Box>
                   }
                 />
                 <Button
                   variant="contained"
-                  size="small"
+                  size="large"
                   onClick={() => {
                     setSelectedProduct(item);
                     setStockUpdateDialog(true);
                     setAlertsDialog(false);
                   }}
                   sx={{
-                    borderRadius: 2,
+                    borderRadius: 3,
                     textTransform: 'none',
-                    px: 3,
-                    background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
-                    boxShadow: `0 3px 5px 2px ${alpha(theme.palette.primary.main, 0.3)}`,
+                    px: 4,
+                    py: 1.5,
+                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.dark, 0.9)})`,
+                    boxShadow: `0 8px 16px -4px ${alpha(theme.palette.primary.main, 0.25)}`,
+                    transition: 'all 0.2s ease-in-out',
                     '&:hover': {
-                      transform: 'translateY(-1px)'
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 12px 20px -4px ${alpha(theme.palette.primary.main, 0.3)}`
                     }
                   }}
                 >

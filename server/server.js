@@ -7,6 +7,7 @@ const authorization = require('./routes/authRoute');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
 const billRoutes = require('./routes/billRoutes')
+const requestRoutes = require('./routes/requestRoutes')
 
 const app = express();
 const PORT = process.env.PORT || 5017;
@@ -27,6 +28,7 @@ app.use('/api/auth', authorization);
 app.use('/api/product/', productRoutes);
 app.use('/api/user/', userRoutes);
 app.use('/api/bill', billRoutes)
+app.use('/api', requestRoutes)
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {

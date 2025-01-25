@@ -114,6 +114,28 @@ class ComprehensiveRecommendationModel:
 
         return sorted(recommendations, key=lambda x: x['risk_level'], reverse=True)
 
+    def get_product_recommendation(self, sku):
+        # Get all recommendations
+        all_recommendations = self.generate_comprehensive_recommendations()
+        
+        # Find specific product recommendation
+        product_rec = next((rec for rec in all_recommendations if rec['sku'] == sku), None)
+        
+        if product_rec:
+            # Get similar products based on category and price range
+            similar_products = [
+                rec for rec in all_recommendations 
+                if rec['sku'] != sku 
+                and rec['category'] == product_rec['category']
+                and 0.7 * product_rec['price'] <= rec['price'] <= 1.3 * product_rec['price']
+            ][:3]
+            
+            # Add similar products to recommendation
+            product_rec['similar_products'] = similar_products
+            
+            return product_rec
+        return None
+
     def _calculate_risk_level(self, current_stock, recommended_stock, market_demand):
         # Calculate stock risk based on current stock, recommended stock, and market demand
         stock_ratio = current_stock / recommended_stock if recommended_stock > 0 else 0

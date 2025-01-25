@@ -2,9 +2,14 @@ const mongoose = require('mongoose');
 
 const userRequestSchema = new mongoose.Schema(
   {
-    name: {
+    businessName: {
       type: String,
       required: true
+    },
+    industry: {
+      type: String,
+      required: true,
+      enum: ['Retail', 'Manufacturing', 'Wholesale', 'Restaurant', 'Healthcare', 'Technology', 'Other']
     },
     email: {
       type: String,
@@ -13,18 +18,13 @@ const userRequestSchema = new mongoose.Schema(
       lowercase: true,
       trim: true
     },
-    mobileNumber: {
+    phone: {
       type: String,
       required: true
     },
-    password: {
+    description: {
       type: String,
       required: true
-    },
-    role: {
-      type: String,
-      enum: ['user', 'admin'],
-      default: 'user'
     },
     status: {
       type: String,

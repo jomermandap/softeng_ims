@@ -1,43 +1,37 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
 const UserRequest = require('../models/UserRequest');
-const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 // Route to handle access request
 router.post('/request', async (req, res) => {
-  const { name, email, mobileNumber, password, role } = req.body;
+  const { businessName, industry, email, phone, description } = req.body;
 
   try {
-    // Check if the user already exists
+    // Check if the business email already exists
     const existingRequest = await UserRequest.findOne({ email });
     if (existingRequest) {
-      return res.status(400).json({ error: 'You have already requested access.' });
+      return res.status(400).json({ error: 'A request with this email already exists.' });
     }
 
-    // Hash the password before saving it
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create a new user request
     const userRequest = new UserRequest({
-      name,
+      businessName, // Changed from 'name' to 'businessName'
       email,
-      mobileNumber,
-      password: hashedPassword,
-      role
+      phone, // Changed from 'mobileNumber' to 'phone'
+      status: 'pending',
+      industry,
+      description
     });
 
     await userRequest.save();
 
     // Send a success response
     res.status(201).json({
-      message: 'Request submitted successfully. You will be notified once approved.'
+      message: 'Request submitted successfully. We will review and notify you through email.'
     });
   } catch (err) {
     res.status(500).json({ error: 'An error occurred while processing your request.' });
   }
 });
-
 
 router.put('/approve-reject/:id', async (req, res) => {
   const { id } = req.params;
