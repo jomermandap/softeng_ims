@@ -6,6 +6,7 @@ const { Server } = require('socket.io');
 const authorization = require('./routes/authRoute');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
+const billRoutes = require('./routes/billRoutes')
 
 const app = express();
 const PORT = process.env.PORT || 5017;
@@ -25,6 +26,7 @@ connectDB();
 app.use('/api/auth', authorization);
 app.use('/api/product/', productRoutes);
 app.use('/api/user/', userRoutes);
+app.use('/api/bill', billRoutes)
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {

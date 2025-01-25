@@ -154,7 +154,7 @@ const AdvancedReports = () => {
                 backdropFilter: 'blur(10px)'
               }}
             >
-              <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 4 }}>
+              <Typography variant="h4" gutterBottom sx={{ fontWeight: 600, mb: 4 }} color="primary">
                 Advanced Reports
               </Typography>
               

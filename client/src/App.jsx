@@ -4,6 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import RequestAccess from "./pages/RequestAccess";
 import Inventory from "./pages/Inventory"
 import ChartsPage from "./pages/ChartsPage";
+import BillDetails from "./pages/BillDetails"
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/dashboard" element={<HomePage/>}/>
         <Route path="/inventory" element={<Inventory/>}/>
         <Route path="/charts" element={<ChartsPage/>}/>
+        <Route path="/bills" element={<BillDetails/>}/>
       </Routes>
     </Router>
   );
