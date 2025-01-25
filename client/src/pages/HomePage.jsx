@@ -23,14 +23,16 @@ import {
   Menu as MenuIcon,
   BarChart,
   Group,
-  Warehouse
+  Warehouse,
+  Lightbulb
 } from '@mui/icons-material';
 import Dashboard from './Dashboard';
 import Inventory from './Inventory';
 import ChartsPage from './ChartsPage';
 import UserManagement from './UserManagement';
 import AdvancedReports from './AdvancedReports';
-import BillDetails from './BillDetails'; // Import BillDetails page
+import BillDetails from './BillDetails'; 
+import Recommendation from './Recommendation';
 
 const drawerWidth = 280;
 
@@ -169,6 +171,24 @@ const HomePage = () => {
             >
               <ListItemIcon><BarChart color={currentPage === 'advancedReports' ? 'primary' : 'inherit'} /></ListItemIcon>
               <ListItemText primary="Advanced Reports" primaryTypographyProps={{ fontWeight: currentPage === 'advancedReports' ? 600 : 500 }} />
+            </ListItem>
+            <ListItem 
+              button
+              selected={currentPage === 'recommendation'}
+              onClick={() => handlePageChange('recommendation')}
+              sx={{ 
+                borderRadius: 2, 
+                mb: 1,
+                '&.Mui-selected': {
+                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+                  }
+                }
+              }}
+            >
+              <ListItemIcon><Lightbulb color={currentPage === 'recommendation' ? 'primary' : 'inherit'} /></ListItemIcon>
+              <ListItemText primary="Recommendations" primaryTypographyProps={{ fontWeight: currentPage === 'recommendation' ? 600 : 500 }} />
             </ListItem>
           </>
         ) : (
@@ -326,7 +346,8 @@ const HomePage = () => {
          currentPage === 'inventory' ? <Inventory /> : 
          currentPage === 'userManagement' ? <UserManagement /> :
          currentPage === 'advancedReports' ? <AdvancedReports /> :
-         currentPage === 'billDetails' ? <BillDetails /> : // Render BillDetails page
+         currentPage === 'billDetails' ? <BillDetails /> :
+         currentPage === 'recommendation' ? <Recommendation /> :
          <ChartsPage />}
       </Box>
     </Box>

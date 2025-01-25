@@ -188,7 +188,7 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
               name="price"
               label="Price"
               type="number"
-              value={formData.price}
+              value={Math.floor(formData.price)}
               onChange={handleChange}
               required
               variant="outlined"
@@ -196,7 +196,7 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
               InputProps={{
                 startAdornment: (
                   <Typography sx={{ mr: 1, color: theme.palette.text.secondary }}>
-                    $
+                    ₹
                   </Typography>
                 )
               }}

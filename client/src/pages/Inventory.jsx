@@ -374,7 +374,7 @@ const Inventory = () => {
                         )}
                       </Box>
                     </TableCell>
-                    <TableCell>₹{product.price}</TableCell>
+                    <TableCell>₹{Math.floor(product.price)}</TableCell>
                     {isAdmin && (
                       <TableCell align="right">
                         <IconButton 

@@ -325,12 +325,13 @@ const BillPage = () => {
                         <TableCell>
                           <Chip 
                             label={bill.billNumber} 
-                            color="primary" 
+                            color={isDue ? 'error.main' : 'primary.main'} 
                             variant="outlined" 
                             size="small"
                             sx={{ 
                               borderRadius: 2,
                               fontWeight: 500,
+                              borderColor: isDue ? 'error.main' : 'primary.main', 
                               '& .MuiChip-label': { px: 2 }
                             }}
                           />
@@ -477,7 +478,11 @@ const BillPage = () => {
                       color="primary" 
                       variant="outlined" 
                       size="small" 
-                      sx={{ ml: 2, borderRadius: 2 }}
+                      sx={{ 
+                        ml: 2, 
+                        borderRadius: 2,
+                        borderColor: selectedBill.paymentType?.toLowerCase() === 'due' ? 'error.main' : 'primary.main' // Change border color if due
+                      }}
                     />
                   </Typography>
                   <Typography variant="body1">

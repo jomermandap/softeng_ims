@@ -18,9 +18,13 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Paper
+  Paper,
+  useTheme,
+  alpha,
+  Divider,
+  MenuItem
 } from '@mui/material';
-import { Close, Receipt, Print } from '@mui/icons-material';
+import { Close, Receipt, Print, ShoppingCart, Person, Payments } from '@mui/icons-material';
 
 const BillGenerationDialog = ({ 
   billDialog, 
@@ -31,6 +35,7 @@ const BillGenerationDialog = ({
   setSaleQuantity, 
   handleGenerateBill 
 }) => {
+  const theme = useTheme();
   const [showBillDialog, setShowBillDialog] = useState(false);
   const [billNumber] = useState(`BILL-${Date.now()}-${Math.floor(Math.random() * 1000)}`); 
   const [billDetails, setBillDetails] = useState(null);
@@ -46,7 +51,7 @@ const BillGenerationDialog = ({
 
   const handleGenerateBillClick = () => {
     if (!selectedProduct || !saleQuantity || !vendorName) {
-      return; // Early return if required fields are missing
+      return;
     }
 
     const quantity = parseInt(saleQuantity);
@@ -81,21 +86,41 @@ const BillGenerationDialog = ({
         }}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
+          }
+        }}
       >
-        <DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="h6">Generate Bill</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <ShoppingCart sx={{ color: theme.palette.primary.main }} />
+              <Typography variant="h5" fontWeight={600}>
+                Generate Bill
+              </Typography>
+            </Box>
             <IconButton
               onClick={() => {
                 setBillDialog(false);
                 setSelectedProduct(null);
                 setSaleQuantity('');
               }}
+              sx={{
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.error.main, 0.1),
+                  color: theme.palette.error.main
+                }
+              }}
             >
               <Close />
             </IconButton>
           </Stack>
         </DialogTitle>
+
+        <Divider />
+
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 2 }}>
             <TextField
@@ -103,60 +128,112 @@ const BillGenerationDialog = ({
               value={selectedProduct?.name || ''}
               disabled
               fullWidth
+              InputProps={{
+                startAdornment: (
+                  <ShoppingCart sx={{ mr: 1, color: theme.palette.text.secondary }} />
+                )
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.05)
+                }
+              }}
             />
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <TextField
+                label="Available Stock"
+                value={selectedProduct?.stock || ''}
+                disabled
+                fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    bgcolor: alpha(theme.palette.primary.main, 0.05)
+                  }
+                }}
+              />
+
+              <TextField
+                label="Sale Quantity"
+                value={saleQuantity}
+                onChange={(e) => setSaleQuantity(e.target.value)}
+                type="number"
+                fullWidth
+                autoFocus
+                required
+                error={selectedProduct && parseInt(saleQuantity) > selectedProduct.stock}
+                helperText={selectedProduct && parseInt(saleQuantity) > selectedProduct.stock ? 
+                  "Quantity exceeds available stock" : ""}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    '&.Mui-focused fieldset': {
+                      borderColor: theme.palette.primary.main
+                    }
+                  }
+                }}
+              />
+            </Box>
+
             <TextField
-              label="Available Stock"
-              value={selectedProduct?.stock || ''}
-              disabled
-              fullWidth
-            />
-            <TextField
-              label="Sale Quantity"
-              value={saleQuantity}
-              onChange={(e) => setSaleQuantity(e.target.value)}
-              type="number"
-              fullWidth
-              autoFocus
-              required
-              error={selectedProduct && parseInt(saleQuantity) > selectedProduct.stock}
-              helperText={selectedProduct && parseInt(saleQuantity) > selectedProduct.stock ? 
-                "Quantity exceeds available stock" : ""}
-            />
-            <TextField
-              label="Vendor Name" 
+              label="Vendor Name"
               value={vendorName}
               onChange={(e) => setVendorName(e.target.value)}
               fullWidth
               required
               error={!vendorName}
               helperText={!vendorName ? "Vendor name is required" : ""}
+              InputProps={{
+                startAdornment: (
+                  <Person sx={{ mr: 1, color: theme.palette.text.secondary }} />
+                )
+              }}
             />
+
             <TextField
-              label="Payment Type" 
+              label="Payment Type"
               select
               value={paymentType}
               onChange={(e) => setPaymentType(e.target.value)}
               fullWidth
-              SelectProps={{
-                native: true,
+              InputProps={{
+                startAdornment: (
+                  <Payments sx={{ mr: 1, color: theme.palette.text.secondary }} />
+                )
               }}
             >
-              <option value="paid">Paid</option>
-              <option value="due">Due</option>
+              <MenuItem value="paid">Paid</MenuItem>
+              <MenuItem value="due">Due</MenuItem>
             </TextField>
+
             {saleQuantity && selectedProduct && (
-              <Typography variant="h6" align="right">
-                Total: ₹{totalAmount > 0 ? totalAmount.toLocaleString() : '0'} 
-              </Typography>
+              <Paper 
+                elevation={0}
+                sx={{ 
+                  p: 2, 
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2
+                }}
+              >
+                <Typography variant="h6" align="right" color="primary.main">
+                  Total: ₹{totalAmount > 0 ? totalAmount.toLocaleString() : '0'} 
+                </Typography>
+              </Paper>
             )}
           </Stack>
         </DialogContent>
-        <DialogActions>
+
+        <DialogActions sx={{ p: 3, gap: 1 }}>
           <Button 
             onClick={() => {
               setBillDialog(false);
               setSelectedProduct(null);
               setSaleQuantity('');
+            }}
+            variant="outlined"
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3
             }}
           >
             Cancel
@@ -166,6 +243,13 @@ const BillGenerationDialog = ({
             variant="contained"
             disabled={!saleQuantity || !vendorName ||
               (selectedProduct && parseInt(saleQuantity) > selectedProduct.stock)}
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              px: 3,
+              background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+              boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)'
+            }}
           >
             Generate Bill
           </Button>
@@ -179,14 +263,14 @@ const BillGenerationDialog = ({
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: 4,
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            borderRadius: 3,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.1)'
           }
         }}
       >
         <DialogTitle 
           sx={{ 
-            bgcolor: 'primary.main', 
+            background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.light} 90%)`,
             color: 'white',
             p: 3,
             display: 'flex', 
@@ -196,35 +280,45 @@ const BillGenerationDialog = ({
         >
           <Box display="flex" alignItems="center">
             <Receipt sx={{ mr: 2 }} />
-            Sales Invoice
+            <Typography variant="h5" fontWeight={600}>
+              Sales Invoice
+            </Typography>
           </Box>
-          <Typography variant="subtitle1">
+          <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>
             Bill No: {billNumber}
           </Typography>
         </DialogTitle>
+
         <DialogContent sx={{ p: 4 }}>
           {billDetails && (
             <>
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" gutterBottom>
+              <Box sx={{ mb: 4 }}>
+                <Typography variant="h6" gutterBottom color="primary" fontWeight={600}>
                   Product Details
                 </Typography>
-                <TableContainer component={Paper} variant="outlined">
+                <TableContainer 
+                  component={Paper} 
+                  variant="outlined"
+                  sx={{ 
+                    borderRadius: 2,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                  }}
+                >
                   <Table>
                     <TableHead>
-                      <TableRow>
-                        <TableCell>Product Name</TableCell>
-                        <TableCell>SKU</TableCell>
-                        <TableCell align="right">Price</TableCell>
-                        <TableCell align="right">Quantity</TableCell>
-                        <TableCell align="right">Total</TableCell>
+                      <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+                        <TableCell sx={{ fontWeight: 600 }}>Product Name</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>SKU</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>Price</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>Quantity</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>Total</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       <TableRow>
                         <TableCell>{billDetails.product.name}</TableCell>
                         <TableCell>{billDetails.product.sku}</TableCell>
-                        <TableCell align="right">₹{Math.ceil(selectedProduct.price)}</TableCell> 
+                        <TableCell align="right">₹{Math.ceil(selectedProduct.price)}</TableCell>
                         <TableCell align="right">{billDetails.quantity}</TableCell>
                         <TableCell align="right">₹{billDetails.total}</TableCell>
                       </TableRow>
@@ -233,23 +327,34 @@ const BillGenerationDialog = ({
                 </TableContainer>
               </Box>
 
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                mb: 3,
-                p: 2,
-                bgcolor: 'background.paper',
-                borderRadius: 2
-              }}>
-                <Typography variant="subtitle1">Date: {currentDate}</Typography>
-                <Typography variant="h6">Total Amount: ₹{parseFloat(billDetails.total).toFixed(2)}</Typography>
-              </Box>
+              <Paper
+                elevation={0}
+                sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  mb: 3,
+                  p: 3,
+                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                  borderRadius: 2
+                }}
+              >
+                <Typography variant="subtitle1">
+                  Date: {currentDate}
+                </Typography>
+                <Typography variant="h6" color="primary.main" fontWeight={600}>
+                  Total Amount: ₹{parseFloat(billDetails.total).toFixed(2)}
+                </Typography>
+              </Paper>
 
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 3 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 4 }}>
                 <Button 
-                  variant="contained" 
+                  variant="outlined"
                   onClick={handleCloseBillDialog}
-                  color="secondary"
+                  sx={{ 
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4
+                  }}
                 >
                   Close
                 </Button>
@@ -258,10 +363,11 @@ const BillGenerationDialog = ({
                   startIcon={<Print />} 
                   onClick={handlePrint}
                   sx={{
-                    bgcolor: 'success.main',
-                    '&:hover': {
-                      bgcolor: 'success.dark'
-                    }
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                    background: 'linear-gradient(45deg, #4CAF50 30%, #81C784 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(76, 175, 80, .3)'
                   }}
                 >
                   Print Invoice
