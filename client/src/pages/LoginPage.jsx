@@ -80,9 +80,9 @@ const LoginPage = () => {
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 4 }}>
-            <InventoryIcon sx={{ fontSize: 48, mr: 2 }} />
+            <InventoryIcon sx={{ fontSize: 40, mr: 3 }} />
             <Typography variant="h3" sx={{ fontWeight: 700 }}>
-              THE FUCKING INVENTORY SYSTEM
+              Envirotech Inventory Management System
             </Typography>
           </Box>
           
@@ -178,24 +178,6 @@ const LoginPage = () => {
                 }}
               >
                 Sign In to Dashboard
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                onClick={() => navigate('/request')}
-                sx={{
-                  py: 1.8,
-                  borderRadius: '12px',
-                  fontSize: '1.1rem',
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  '&:hover': {
-                    backgroundColor: theme.palette.primary.main + '10'
-                  }
-                }}
-              >
-                Request New Manager Access
               </Button>
             </Stack>
 
