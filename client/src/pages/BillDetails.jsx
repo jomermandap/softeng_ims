@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { 
   Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
   Card, CardContent, Grid, Chip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, 
-  DialogContent, Tooltip, LinearProgress, Stack, Button 
+  DialogContent, Tooltip, LinearProgress, Stack, Button, DialogActions 
 } from '@mui/material';
 import { 
   Search as SearchIcon, Visibility as ViewIcon, Print as PrintIcon, Download as DownloadIcon, 
   FilterList as FilterIcon, Cancel as CancelIcon, GetApp as ExportIcon, Warning as WarningIcon, 
-  Person as PersonIcon, Delete as DeleteIcon 
+  Person as PersonIcon, Delete as DeleteIcon, Check as CheckIcon 
 } from '@mui/icons-material';
 import { format, differenceInDays } from 'date-fns';
 import { saveAs } from 'file-saver';
@@ -31,6 +31,7 @@ const BillPage = () => {
     dateTo: ''
   });
   const [vendorDialogOpen, setVendorDialogOpen] = useState(false);
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -234,6 +235,51 @@ const BillPage = () => {
   const handleDeleteBill = (billNumber) => {
     deleteBill(billNumber);
   };
+
+  const handleMarkAsPaid = () => {
+    setConfirmDialogOpen(true);
+  };
+
+  const confirmMarkAsPaid = async () => {
+    await markBillAsPaid(selectedBill.billNumber);
+    setConfirmDialogOpen(false);
+  };
+
+  const markBillAsPaid = async (billNumber) => {
+    try {
+      const response = await fetch(`http://localhost:5017/api/bill/mark-paid/${billNumber}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      if (response.ok) {
+        await response.json();
+  
+        // Update the bill in the state
+        setBills((prevBills) =>
+          prevBills.map((bill) =>
+            bill.billNumber === billNumber ? { ...bill, paymentType: 'Paid' } : bill
+          )
+        );
+  
+        // Update selected bill (if open)
+        if (selectedBill?.billNumber === billNumber) {
+          setSelectedBill((prev) => prev ? { ...prev, paymentType: 'Paid' } : null);
+        }
+  
+        setConfirmDialogOpen(false);
+      } else {
+        const { message } = await response.json();
+        alert(`Error: ${message}`);
+      }
+    } catch (error) {
+      console.error('Error marking bill as paid:', error);
+      alert('Failed to mark bill as paid. Please try again.');
+    }
+  };
+  
 
   //New Functions
   
@@ -659,7 +705,7 @@ const BillPage = () => {
             <CancelIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent sx={{ p: 4 }}>
+        <DialogContent sx={{ p: 4  }}>
           {selectedBill && (
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
@@ -671,7 +717,7 @@ const BillPage = () => {
                   p: 3, 
                   borderRadius: '20px',
                   boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-                  border: '1px solid rgba(0,0,0,0.08)'
+                  border: '1px solid rgba(0,0,0,0.08)',
                 }}>
                   <Typography variant="body1" sx={{ mb: 2 }}>
                     <strong>Bill Number:</strong> 
@@ -693,9 +739,26 @@ const BillPage = () => {
                   <Typography variant="body1">
                     <strong>Vendor Name:</strong> {selectedBill.vendorName || 'N/A'}
                   </Typography>
-                  <Typography variant="body1">
+                  <Typography variant="body1" sx={{ mb: 2 }}>
                     <strong>Payment Type:</strong> {selectedBill.paymentType || 'N/A'}
                   </Typography>
+                  {selectedBill.paymentType?.toLowerCase() === 'due' && (
+                    <Button
+                      variant="contained"
+                      color="success"
+                      startIcon={<CheckIcon />}
+                      onClick={handleMarkAsPaid}
+                      fullWidth
+                      sx={{
+                        borderRadius: '8px',
+                        textTransform: 'none',
+                        fontWeight: 600,
+                        mt: 2
+                      }}
+                    >
+                      Mark as Paid
+                    </Button>
+                  )}
                 </Box>
               </Grid>
               <Grid item xs={12} md={6}>
@@ -717,7 +780,7 @@ const BillPage = () => {
                   </Typography>
                 </Box>
               </Grid>
-          ÍÍ   <Grid item xs={12}>
+             <Grid item xs={12}>
                 <Box sx={{ 
                   background: 'linear-gradient(135deg, #1976d2 30%, #2196f3 90%)',
                   p: 3, 
@@ -803,6 +866,34 @@ const BillPage = () => {
             </Table>
           </TableContainer>
         </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={confirmDialogOpen}
+        onClose={() => setConfirmDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '16px',
+            p: 2
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 600 }}>Confirm Payment</DialogTitle>
+        <DialogContent>
+          <Typography>Are you sure you want to mark this bill as paid?</Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialogOpen(false)}>Cancel</Button>
+          <Button 
+            onClick={confirmMarkAsPaid} 
+            variant="contained" 
+            color="success"
+          >
+            Mark as Paid
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

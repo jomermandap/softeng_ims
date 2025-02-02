@@ -98,4 +98,29 @@ router.delete('/delete/:billNumber', async (req, res) => {
 });
 
 
+// Route to mark a bill as paid
+router.put('/mark-paid/:billNumber', async (req, res) => {
+  const { billNumber } = req.params;
+
+  try {
+    const updatedBill = await Bill.findOneAndUpdate(
+      { billNumber },
+      { paymentType: 'Paid' },
+      { new: true } // Return the updated document
+    );
+
+    if (!updatedBill) {
+      return res.status(404).json({ message: 'Bill not found' });
+    }
+
+    res.status(200).json({
+      message: 'Bill marked as paid successfully',
+      bill: updatedBill,
+    });
+  } catch (error) {
+    console.error('Error marking bill as paid:', error);
+    res.status(500).json({ message: 'An error occurred while updating the bill status.' });
+  }
+});
+
 module.exports = router;
