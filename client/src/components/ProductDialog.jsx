@@ -147,6 +147,7 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
               required
               variant="outlined"
               placeholder="Enter product name"
+              margin="normal"
             />
 
             <TextField
@@ -196,7 +197,7 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
               InputProps={{
                 startAdornment: (
                   <Typography sx={{ mr: 1, color: theme.palette.text.secondary }}>
-                    ₹
+                    ₱
                   </Typography>
                 )
               }}
@@ -221,8 +222,9 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
                 onChange={handleChange}
                 label="Category"
               >
-                <MenuItem value="Electronics">Electronics</MenuItem>
-                <MenuItem value="Accessories">Accessories</MenuItem>
+                <MenuItem value="Tables">Tables</MenuItem>
+                <MenuItem value="Chairs">Chairs</MenuItem>
+                <MenuItem value="Miscellaneous">Miscellaneous</MenuItem>
               </Select>
             </FormControl>
           </Box>

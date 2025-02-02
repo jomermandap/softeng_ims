@@ -103,7 +103,7 @@ const InventoryTable = ({
                     </Box>
                   </Stack>
                 </TableCell>
-                <TableCell align="right" sx={{ py: 2.5, fontWeight: 600 }}>₹{Math.floor(item.price)}</TableCell>
+                <TableCell align="right" sx={{ py: 2.5, fontWeight: 600 }}>₱{Math.floor(item.price)}</TableCell>
                 <TableCell sx={{ py: 2.5 }}>
                   <Chip
                     label={item.stock < item.lowStockThreshold ? "Low Stock" : "In Stock"}

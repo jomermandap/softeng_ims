@@ -36,7 +36,7 @@ router.post('/request', async (req, res) => {
 router.put('/approve-reject/:id', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
-
+s
   if (!['approved', 'rejected'].includes(status)) {
     return res.status(400).json({ error: 'Invalid status' });
   }

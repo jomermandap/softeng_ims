@@ -1,39 +1,13 @@
 import { useState, useEffect } from 'react';
 import { 
-  Box, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
-  Paper, 
-  Card, 
-  CardContent, 
-  Grid, 
-  Chip, 
-  IconButton, 
-  TextField, 
-  InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Tooltip,
-  LinearProgress,
-  Stack,
-  Button
+  Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, 
+  Card, CardContent, Grid, Chip, IconButton, TextField, InputAdornment, Dialog, DialogTitle, 
+  DialogContent, Tooltip, LinearProgress, Stack, Button 
 } from '@mui/material';
 import { 
-  Search as SearchIcon, 
-  Visibility as ViewIcon, 
-  Print as PrintIcon, 
-  Download as DownloadIcon,
-  FilterList as FilterIcon,
-  Cancel as CancelIcon,
-  GetApp as ExportIcon,
-  Warning as WarningIcon,
-  Person as PersonIcon
+  Search as SearchIcon, Visibility as ViewIcon, Print as PrintIcon, Download as DownloadIcon, 
+  FilterList as FilterIcon, Cancel as CancelIcon, GetApp as ExportIcon, Warning as WarningIcon, 
+  Person as PersonIcon, Delete as DeleteIcon 
 } from '@mui/icons-material';
 import { format, differenceInDays } from 'date-fns';
 import { saveAs } from 'file-saver';
@@ -70,6 +44,8 @@ const BillPage = () => {
         const billsResult = await billsResponse.json();
         const productsResult = await productsResponse.json();
         
+        console.log('Fetched bills:', billsResult);
+        
         setBills(billsResult);
         setProducts(productsResult.data || []);
       } catch (error) {
@@ -83,7 +59,6 @@ const BillPage = () => {
   }, []);
 
   useEffect(() => {
-    // Calculate due summary
     const dueBills = bills.filter(bill => bill.paymentType?.toLowerCase() === 'due');
     const vendorMap = new Map();
 
@@ -168,7 +143,7 @@ const BillPage = () => {
               <tr>
                 <td>${bill.productName}</td>
                 <td>${bill.quantity}</td>
-                <td>₹${bill.totalAmount.toFixed(2)}</td>
+                <td>₱${bill.totalAmount.toFixed(2)}</td>
                 <td>${bill.vendorName || 'N/A'}</td>
                 <td>${bill.paymentType || 'N/A'}</td>
               </tr>
@@ -184,7 +159,7 @@ const BillPage = () => {
   const handleDownload = (bill) => {
     const csvContent = `data:text/csv;charset=utf-8,` +
       `Bill Number,Product Name,Quantity,Total Amount,Date,Vendor Name,Payment Type\n` +
-      `${bill.billNumber},${bill.productName},${bill.quantity},₹${bill.totalAmount.toFixed(2)},${new Date(bill.createdAt).toLocaleDateString()},${bill.vendorName || 'N/A'},${bill.paymentType || 'N/A'}`;
+      `${bill.billNumber},${bill.productName},${bill.quantity},₱${bill.totalAmount.toFixed(2)},${new Date(bill.createdAt).toLocaleDateString()},${bill.vendorName || 'N/A'},${bill.paymentType || 'N/A'}`;
     
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -201,6 +176,29 @@ const BillPage = () => {
       ...bill, 
       productName: product ? product.name : 'Unknown Product' 
     });
+  };
+
+  // Delete Bill
+  const deleteBill = async (billNumber) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this bill?');
+    if (!confirmDelete) return;
+
+    try {
+      const response = await fetch(`http://localhost:5017/api/bill/delete/${billNumber}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        alert('Bill deleted successfully!');
+        setBills(bills.filter(bill => bill.billNumber !== billNumber));
+      } else {
+        const { message } = await response.json();
+        alert(`Error: ${message}`);
+      }
+    } catch (error) {
+      console.error('Error deleting bill:', error);
+      alert('Failed to delete the bill. Please try again.');
+    }
   };
 
   const clearFilters = () => {
@@ -233,6 +231,12 @@ const BillPage = () => {
     saveAs(blob, 'bills.csv');
   };
 
+  const handleDeleteBill = (billNumber) => {
+    deleteBill(billNumber);
+  };
+
+  //New Functions
+  
   return (
     <Box sx={{ 
       p: 4, 
@@ -289,7 +293,7 @@ const BillPage = () => {
               <Typography variant="h6" color="warning.main">Total Due Amount</Typography>
             </Stack>
             <Typography variant="h4" sx={{ mt: 3, mb: 1, color: 'warning.main', fontWeight: 700 }}>
-              ₹{dueSummary.totalAmount.toFixed(2)}
+              ₱{dueSummary.totalAmount.toFixed(2)}
             </Typography>
             <Typography variant="body1" color="warning.main" sx={{ opacity: 0.8 }}>
               Outstanding Payments
@@ -516,7 +520,7 @@ const BillPage = () => {
                               fontSize: '0.875rem'
                             }}
                           >
-                            ₹{bill.totalAmount.toFixed(2)}
+                            ₱{bill.totalAmount.toFixed(2)}
                           </Typography>
                         </TableCell>
                         <TableCell>
@@ -584,6 +588,24 @@ const BillPage = () => {
                                 }}
                               >
                                 <DownloadIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete Bill">
+                              <IconButton 
+                                size="small"
+                                onClick={() => handleDeleteBill(bill.billNumber)}
+                                sx={{ 
+                                  bgcolor: 'error.soft',
+                                  color: 'error.main',
+                                  borderRadius: '10px',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': { 
+                                    bgcolor: 'error.softHover',
+                                    transform: 'translateY(-2px)'
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
                           </Box>
@@ -695,7 +717,7 @@ const BillPage = () => {
                   </Typography>
                 </Box>
               </Grid>
-              <Grid item xs={12}>
+          ÍÍ   <Grid item xs={12}>
                 <Box sx={{ 
                   background: 'linear-gradient(135deg, #1976d2 30%, #2196f3 90%)',
                   p: 3, 
@@ -708,7 +730,7 @@ const BillPage = () => {
                 }}>
                   <Typography variant="h6">Total Amount</Typography>
                   <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    ₹{selectedBill.totalAmount.toFixed(2)}
+                   ₱{selectedBill.totalAmount.toFixed(2)}
                   </Typography>
                 </Box>
               </Grid>
@@ -772,7 +794,7 @@ const BillPage = () => {
                 {dueSummary.vendors.map((vendor, index) => (
                   <TableRow key={index}>
                     <TableCell>{vendor.name}</TableCell>
-                    <TableCell align="right">₹{vendor.totalAmount.toFixed(2)}</TableCell>
+                    <TableCell align="right">₱{vendor.totalAmount.toFixed(2)}</TableCell>
                     <TableCell align="right">{vendor.daysOverdue}</TableCell>
                     <TableCell align="right">{vendor.billCount}</TableCell>
                   </TableRow>

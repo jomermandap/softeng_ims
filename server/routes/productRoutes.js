@@ -69,6 +69,7 @@ router.put('/update/:sku', async (req, res) => {
   }
 });
 
+
 // Route to delete a product based on SKU
 router.delete('/delete/:sku', async (req, res) => {
   try {
@@ -86,5 +87,7 @@ router.delete('/delete/:sku', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+// 
 
 module.exports = router;

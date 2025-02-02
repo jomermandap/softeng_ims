@@ -220,7 +220,7 @@ const Recommendation = () => {
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
                       <AttachMoney fontSize="small" color="primary" />
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        ₹{rec.price?.toFixed(2)}
+                        ₱{rec.price?.toFixed(2)}
                       </Typography>
                     </Box>
 

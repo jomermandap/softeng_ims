@@ -40,6 +40,7 @@ const UserManagement = () => {
   const [formData, setFormData] = useState({
     email: '',
     role: '',
+    password: '',
   });
 
   useEffect(() => {
@@ -77,7 +78,15 @@ const UserManagement = () => {
 
   const handleSubmit = async () => {
     if (selectedUser) {
-      // Update existing user
+      await updateUser();
+    } else {
+      await addUser();
+    }
+  };
+
+  // Function to update an existing user
+  const updateUser = async () => {
+    try {
       await fetch(`http://localhost:5017/api/user/${selectedUser.email}`, {
         method: 'PUT',
         headers: {
@@ -88,22 +97,35 @@ const UserManagement = () => {
       setUsers(users.map(user => 
         user.email === selectedUser.email ? { ...formData, email: user.email } : user
       ));
-    } else {
-      // Add new user with password derived from email
-      const password = formData.email.split('@')[0]; // Taking password from email
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert('Failed to update user. Please try again.');
+    }
+  };
+
+  // Function to add a new user
+  const addUser = async () => {
+    try {
       await fetch('http://localhost:5017/api/user/add', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ ...formData, password }), // Include password in the body
+        body: JSON.stringify(formData), // Ensure formData includes password
       });
       setUsers([...users, { ...formData, email: formData.email }]);
+      handleCloseDialog();
+    } catch (error) {
+      console.error('Error adding user:', error);
+      alert('Failed to add user. Please try again.');
     }
-    handleCloseDialog();
   };
 
   const handleDeleteUser = async (userEmail) => {
+    const confirmDelete = window.confirm('Are you sure you want to delete this user?'); // Add confirmation prompt
+    if (!confirmDelete) return; // Exit if not confirmed
+
     await fetch(`http://localhost:5017/api/user/${userEmail}`, {
       method: 'DELETE',
     });
@@ -189,6 +211,16 @@ const UserManagement = () => {
               value={formData.email}
               onChange={handleInputChange}
             />
+            { !selectedUser && ( // Show password field only when adding a new user
+              <TextField
+                name="password"
+                label="Password"
+                type="password"
+                fullWidth
+                value={formData.password}
+                onChange={handleInputChange}
+              />
+            )}
             <FormControl fullWidth>
               <InputLabel>Role</InputLabel>
               <Select

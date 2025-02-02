@@ -26,14 +26,15 @@ const DashboardStatsCards = ({
 }) => {
   const theme = useTheme();
 
+  //PHP FORMAT
   const formatValue = (value) => {
     if (value >= 1e7) {
       return `${(value / 1e7).toFixed(2)}Cr`;
     } else if (value >= 1e5) {
       return `${(value / 1e5).toFixed(2)}L`;
     }
-    return value.toLocaleString('en-IN', { style: 'currency', currency: 'INR' });
-  };
+    return value.toLocaleString('en-PH', { style: 'currency', currency: 'PHP' });
+  };  
 
   const statsConfig = [
     {

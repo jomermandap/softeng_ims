@@ -178,6 +178,35 @@ const Inventory = () => {
     setOpenDialog(false);
   };
 
+  //Category Colors
+  const getCategoryStyles = (category) => {
+    const categoryColors = {
+      Miscellaneous: {
+        background: alpha(theme.palette.primary.main, 0.1),
+        text: theme.palette.primary.dark,
+      },
+      Chairs: {
+        background: alpha(theme.palette.success.main, 0.1),
+        text: theme.palette.success.dark,
+      },
+      Tables: {
+        background: alpha(theme.palette.warning.main, 0.1),
+        text: theme.palette.warning.dark,
+      },
+      Accessories: {
+        background: alpha(theme.palette.info.main, 0.1),
+        text: theme.palette.info.dark,
+      },
+      Default: {
+        background: alpha(theme.palette.grey[500], 0.1),
+        text: theme.palette.text.secondary,
+      },
+    };
+  
+    return categoryColors[category] || categoryColors.Default;
+  };
+  
+
   const downloadProductList = () => {
     // Convert inventory data to CSV format
     const headers = ['Product Name', 'SKU', 'Category', 'Stock Level', 'Price'];
@@ -295,8 +324,9 @@ const Inventory = () => {
               }}
             >
               <MenuItem value="all">All Categories</MenuItem>
-              <MenuItem value="Electronics">Electronics</MenuItem>
-              <MenuItem value="Accessories">Accessories</MenuItem>
+              <MenuItem value="Tables">Tables</MenuItem>
+              <MenuItem value="Chairs">Chairs</MenuItem>
+              <MenuItem value="Miscellaneous">Miscellaneous</MenuItem>
             </Select>
           </FormControl>
           <IconButton 
@@ -347,13 +377,9 @@ const Inventory = () => {
                         label={product.category}
                         size="small"
                         sx={{ 
-                          bgcolor: product.category === 'Electronics' ? 
-                            alpha(theme.palette.primary.main, 0.1) : 
-                            alpha(theme.palette.secondary.main, 0.1),
-                          color: product.category === 'Electronics' ?
-                            theme.palette.primary.main :
-                            theme.palette.secondary.main,
-                          fontWeight: 500
+                          bgcolor: getCategoryStyles(product.category).background,
+                          color: getCategoryStyles(product.category).text,
+                          fontWeight: 500,
                         }}
                       />
                     </TableCell>
@@ -374,7 +400,7 @@ const Inventory = () => {
                         )}
                       </Box>
                     </TableCell>
-                    <TableCell>₹{Math.floor(product.price)}</TableCell>
+                    <TableCell>₱{Math.floor(product.price)}</TableCell>
                     {isAdmin && (
                       <TableCell align="right">
                         <IconButton 

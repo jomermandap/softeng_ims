@@ -24,7 +24,7 @@ import {
   Divider,
   MenuItem
 } from '@mui/material';
-import { Close, Receipt, Print, ShoppingCart, Person, Payments } from '@mui/icons-material';
+import { Close, Receipt, Print,Save, ShoppingCart, Person, Payments } from '@mui/icons-material';
 
 const BillGenerationDialog = ({ 
   billDialog, 
@@ -41,6 +41,7 @@ const BillGenerationDialog = ({
   const [billDetails, setBillDetails] = useState(null);
   const [vendorName, setVendorName] = useState(''); 
   const [paymentType, setPaymentType] = useState('paid'); 
+  const [saving, setSaving] = useState(false);
 
   const handleCloseBillDialog = () => {
     setShowBillDialog(false);
@@ -49,13 +50,21 @@ const BillGenerationDialog = ({
     setPaymentType('paid'); 
   };
 
-  const handleGenerateBillClick = () => {
+
+//must save bill records to database
+  const handleGenerateBillClick = async () => {
     if (!selectedProduct || !saleQuantity || !vendorName) {
       return;
     }
 
     const quantity = parseInt(saleQuantity);
     const total = Math.floor(selectedProduct.price * quantity);
+
+    if (quantity > selectedProduct.stock) {
+      alert("Sale quantity exceeds available stock.");
+      return;
+    }
+
     setBillDetails({
       billNumber: billNumber,
       product: selectedProduct,
@@ -64,12 +73,47 @@ const BillGenerationDialog = ({
       vendorName, 
       paymentType
     });
-    handleGenerateBill();
-    setShowBillDialog(true);
-  };
+
+  handleGenerateBill();
+  setShowBillDialog(true);
+};
 
   const handlePrint = () => {
     window.print();
+  };
+
+  //Saving the Bill
+  const handleSaveBill = async () => {
+    if (!billDetails) return;
+    setSaving(true);
+    try {
+      const response = await fetch('http://localhost:5017/api/bill/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          billNumber: billDetails.billNumber,
+          productSku: billDetails.product.sku,
+          quantity: billDetails.quantity,
+          totalAmount: billDetails.total,
+          vendorName: billDetails.vendorName,
+          paymentType: billDetails.paymentType,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Bill saved successfully!');
+        handleCloseBillDialog();
+      } else {
+        alert('Failed to save the bill. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error saving bill:', error);
+      alert('An error occurred while saving the bill.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const totalAmount = selectedProduct ? selectedProduct.price * parseInt(saleQuantity) : 0;
@@ -215,7 +259,7 @@ const BillGenerationDialog = ({
                 }}
               >
                 <Typography variant="h6" align="right" color="primary.main">
-                  Total: ₹{totalAmount > 0 ? totalAmount.toLocaleString() : '0'} 
+                  Total: ₱{totalAmount > 0 ? totalAmount.toLocaleString() : '0'} 
                 </Typography>
               </Paper>
             )}
@@ -318,9 +362,9 @@ const BillGenerationDialog = ({
                       <TableRow>
                         <TableCell>{billDetails.product.name}</TableCell>
                         <TableCell>{billDetails.product.sku}</TableCell>
-                        <TableCell align="right">₹{Math.ceil(selectedProduct.price)}</TableCell>
+                        <TableCell align="right">₱{Math.ceil(selectedProduct.price)}</TableCell>
                         <TableCell align="right">{billDetails.quantity}</TableCell>
-                        <TableCell align="right">₹{billDetails.total}</TableCell>
+                        <TableCell align="right">₱{billDetails.total}</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>
@@ -342,7 +386,7 @@ const BillGenerationDialog = ({
                   Date: {currentDate}
                 </Typography>
                 <Typography variant="h6" color="primary.main" fontWeight={600}>
-                  Total Amount: ₹{parseFloat(billDetails.total).toFixed(2)}
+                  Total Amount: ₱{parseFloat(billDetails.total).toFixed(2)}
                 </Typography>
               </Paper>
 
@@ -357,6 +401,22 @@ const BillGenerationDialog = ({
                   }}
                 >
                   Close
+                </Button>
+                <Button 
+                  variant="contained" 
+                  startIcon={<Save />} 
+                  onClick={handleSaveBill}
+                  disabled={saving}
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: 'none',
+                    px: 4,
+                    background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+                    boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .3)',
+                    ml: 53
+                  }}
+                >
+                  Save
                 </Button>
                 <Button 
                   variant="contained" 
