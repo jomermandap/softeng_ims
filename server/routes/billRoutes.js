@@ -84,6 +84,12 @@ router.delete('/delete/:billNumber', async (req, res) => {
       return res.status(404).json({ message: 'Bill not found' });
     }
 
+    // Restore stock levels
+    await Product.findOneAndUpdate(
+      { sku: deletedBill.productSku },
+      { $inc: { stock: deletedBill.quantity } }
+    );
+
     res.status(200).json({ message: 'Bill deleted successfully', bill: deletedBill });
   } catch (error) {
     console.error('Error deleting bill:', error);
