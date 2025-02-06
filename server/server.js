@@ -1,13 +1,13 @@
 const express = require('express');
 const cors = require('cors');
-const connectDB = require('./utils/db');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+require('dotenv').config(); // Load environment variables from .env
 
 const authorization = require('./routes/authRoute');
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
-const billRoutes = require('./routes/billRoutes')
+const billRoutes = require('./routes/billRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5017;
@@ -16,22 +16,31 @@ const PORT = process.env.PORT || 5017;
 const server = require('http').createServer(app);
 
 // Create a Socket.IO instance and attach it to the HTTP server
-const io = new Server(server);
+const io = new Server(server, {
+  cors: {
+    origin: "http://your-frontend-domain.com", // Replace with your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
 
+// Middlewares
 app.use(cors());
 app.use(express.json());
 
-// Update the connection string
-const uri = "mongodb+srv://imsenvirotech2025:XGVdjdf5oaf3uaiV@cluster0.16kky.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// MongoDB connection
+const uri = process.env.MONGODB_URI;
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("MongoDB Atlas connected"))
-    .catch(err => console.error("MongoDB connection error:", err));
+  .then(() => console.log("MongoDB Atlas connected"))
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1); // Exit the app if the connection fails
+  });
 
 // Routes
 app.use('/api/auth', authorization);
 app.use('/api/product/', productRoutes);
 app.use('/api/user/', userRoutes);
-app.use('/api/bill', billRoutes)
+app.use('/api/bill', billRoutes);
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
