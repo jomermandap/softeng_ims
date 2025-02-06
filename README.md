@@ -32,7 +32,7 @@ This project is a **Real-Time Inventory Management System** designed to track an
 ### Backend:
 - **Node.js**: Server-side logic.
 - **Express.js**: REST API framework.
-- **Python**: Machine learning models for inventory recommendations.
+- **Python**: Machine learning models for inventory recommendations. (Future Feature)
 
 ### Database:
 - **MongoDB**: For storing product details, user data, and inventory records.
@@ -43,7 +43,7 @@ This project is a **Real-Time Inventory Management System** designed to track an
 
 ### Prerequisites:
 1. **Node.js** installed on your system.
-2. **MongoDB** running locally or on a cloud service (e.g., MongoDB Atlas).
-3. **Python 3.x** with required ML libraries (scikit-learn, pandas, numpy).
+2. **MongoDB** running on a cloud service (MongoDB Atlas).
+3. **Python 3.x** with required ML libraries (scikit-learn, pandas, numpy). (Future Feature)
 4. Basic knowledge of JavaScript, Python, and the MERN stack.
 
