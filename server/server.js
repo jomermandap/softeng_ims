@@ -3,6 +3,7 @@ const cors = require('cors');
 const connectDB = require('./utils/db');
 const { Server } = require('socket.io');
 const mongoose = require('mongoose');
+require('dotenv').config(); // Load environment variables
 
 const authorization = require('./routes/authRoute');
 const productRoutes = require('./routes/productRoutes');
@@ -21,8 +22,8 @@ const io = new Server(server);
 app.use(cors());
 app.use(express.json());
 
-// Update the connection string
-const uri = "mongodb+srv://imsenvirotech2025:XGVdjdf5oaf3uaiV@cluster0.16kky.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+// Use the environment variable for the connection string
+const uri = process.env.MONGODB_URI;
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("MongoDB Atlas connected"))
     .catch(err => console.error("MongoDB connection error:", err));
@@ -31,7 +32,7 @@ mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
 app.use('/api/auth', authorization);
 app.use('/api/product/', productRoutes);
 app.use('/api/user/', userRoutes);
-app.use('/api/bill', billRoutes)
+app.use('/api/bill', billRoutes);
 
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
