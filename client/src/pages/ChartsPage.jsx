@@ -40,8 +40,8 @@ const ChartsPage = () => {
     const fetchData = async () => {
       try {
         const [productResponse, billResponse] = await Promise.all([
-          fetch('http://localhost:5017/api/product/'),
-          fetch('http://localhost:5017/api/bill/')
+          fetch(`${import.meta.env.VITE_API_URL}/product/`),
+          fetch(`${import.meta.env.VITE_API_URL}/bill/`)
         ]);
 
         const productResult = await productResponse.json();

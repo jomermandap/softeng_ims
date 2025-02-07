@@ -38,8 +38,8 @@ const BillPage = () => {
       try {
         setLoading(true);
         const [billsResponse, productsResponse] = await Promise.all([
-          fetch('http://localhost:5017/api/bill/'),
-          fetch('http://localhost:5017/api/product/')
+          fetch(`${import.meta.env.VITE_API_URL}/bill/`),
+          fetch(`${import.meta.env.VITE_API_URL}/product/`)
         ]);
         
         const billsResult = await billsResponse.json();
@@ -185,7 +185,7 @@ const BillPage = () => {
     if (!confirmDelete) return;
 
     try {
-      const response = await fetch(`http://localhost:5017/api/bill/delete/${billNumber}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill/delete/${billNumber}`, {
         method: 'DELETE',
       });
 
@@ -247,7 +247,7 @@ const BillPage = () => {
 
   const markBillAsPaid = async (billNumber) => {
     try {
-      const response = await fetch(`http://localhost:5017/api/bill/mark-paid/${billNumber}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill/mark-paid/${billNumber}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -58,7 +58,7 @@ const Inventory = () => {
   const fetchInventory = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:5017/api/product/');
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/product/`);
       const result = await response.json();
       
       if (result.success) {
@@ -106,7 +106,7 @@ const Inventory = () => {
   const handleDeleteProduct = async (product) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
       try {
-        const response = await fetch(`http://localhost:5017/api/product/delete/${product.sku}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/product/delete/${product.sku}`, {
           method: 'DELETE'
         });
         
@@ -125,7 +125,7 @@ const Inventory = () => {
   const handleSaveProduct = async (formData) => {
     if (selectedProduct) {
       try {
-        const response = await fetch(`http://localhost:5017/api/product/update/${selectedProduct.sku}`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/product/update/${selectedProduct.sku}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -155,7 +155,7 @@ const Inventory = () => {
       }
     } else {
       try {
-        const response = await fetch('http://localhost:5017/api/product/add', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/product/add`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

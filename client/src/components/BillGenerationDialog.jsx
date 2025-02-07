@@ -87,7 +87,7 @@ const BillGenerationDialog = ({
     if (!billDetails) return;
     setSaving(true);
     try {
-      const response = await fetch('http://localhost:5017/api/bill/create', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +101,7 @@ const BillGenerationDialog = ({
           paymentType: billDetails.paymentType,
         }),
       });
-
+  
       if (response.ok) {
         alert('Bill saved successfully!');
         handleCloseBillDialog();

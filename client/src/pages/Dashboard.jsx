@@ -48,7 +48,7 @@ const Dashboard = () => {
     const fetchInventory = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch('http://localhost:5017/api/product/');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/product/`);
         const result = await response.json();
         
         if (result.success) {
@@ -112,7 +112,7 @@ const Dashboard = () => {
     if (!selectedProduct || !newStockValue) return;
 
     try {
-      const response = await fetch(`http://localhost:5017/api/product/update/${selectedProduct.sku}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/product/update/${selectedProduct.sku}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -141,7 +141,7 @@ const Dashboard = () => {
     if (!selectedProduct || !saleQuantity || !vendorName || !paymentType) return;
 
     try {
-      const billResponse = await fetch('http://localhost:5017/api/bill/create', {
+      const billResponse = await fetch(`${import.meta.env.VITE_API_URL}/bill/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -161,7 +161,7 @@ const Dashboard = () => {
       }
 
       const newStock = selectedProduct.stock - parseInt(saleQuantity);
-      const stockResponse = await fetch(`http://localhost:5017/api/product/update/${selectedProduct.sku}`, {
+      const stockResponse = await fetch(`${import.meta.env.VITE_API_URL}/product/update/${selectedProduct.sku}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
