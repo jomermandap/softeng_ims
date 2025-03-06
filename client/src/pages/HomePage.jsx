@@ -24,7 +24,7 @@ import {
   BarChart,
   Group,
   Warehouse,
-  Lightbulb
+  // Lightbulb
 } from '@mui/icons-material';
 import Dashboard from './Dashboard';
 import Inventory from './Inventory';
@@ -75,8 +75,8 @@ const HomePage = () => {
           width: 45, 
           height: 45,
           boxShadow: 2
-        }}>IS</Avatar>
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>Inventory System</Typography>
+        }}>ET</Avatar>
+        <Typography variant="h6" sx={{ fontWeight: 700 }}>Envirotech IMS</Typography>
       </Box>
       <List sx={{ px: 2 }}>
         <ListItem 
@@ -172,7 +172,7 @@ const HomePage = () => {
               <ListItemIcon><BarChart color={currentPage === 'advancedReports' ? 'primary' : 'inherit'} /></ListItemIcon>
               <ListItemText primary="Advanced Reports" primaryTypographyProps={{ fontWeight: currentPage === 'advancedReports' ? 600 : 500 }} />
             </ListItem>
-            <ListItem 
+            {/* <ListItem 
               button
               selected={currentPage === 'recommendation'}
               onClick={() => handlePageChange('recommendation')}
@@ -189,7 +189,7 @@ const HomePage = () => {
             >
               <ListItemIcon><Lightbulb color={currentPage === 'recommendation' ? 'primary' : 'inherit'} /></ListItemIcon>
               <ListItemText primary="Recommendations" primaryTypographyProps={{ fontWeight: currentPage === 'recommendation' ? 600 : 500 }} />
-            </ListItem>
+            </ListItem> */}
           </>
         ) : (
           <>
