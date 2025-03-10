@@ -34,6 +34,11 @@ app.use('/api/product/', productRoutes);
 app.use('/api/user/', userRoutes);
 app.use('/api/bill', billRoutes);
 
+app.get('/', (req, res) => {
+  res.send('API is running...');
+});
+
+
 // Handle Socket.IO connections
 io.on('connection', (socket) => {
   console.log('New client connected:', socket.id);
