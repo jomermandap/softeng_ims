@@ -38,7 +38,7 @@ const AdvancedReports = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/product/`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/product/`);
       if (!response.ok) {
         throw new Error('Failed to fetch products');
       }

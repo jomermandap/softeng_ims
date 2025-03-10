@@ -46,7 +46,7 @@ const UserManagement = () => {
   useEffect(() => {
     // Fetch users from the API
     const fetchUsers = async () => {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/user/`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/user/`);
       const data = await response.json();
       setUsers(data);
     };
@@ -87,7 +87,7 @@ const UserManagement = () => {
   // Function to update an existing user
   const updateUser = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/user/${selectedUser.email}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/user/${selectedUser.email}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -107,7 +107,7 @@ const UserManagement = () => {
   // Function to add a new user
   const addUser = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/user/add`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/user/add`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -126,7 +126,7 @@ const UserManagement = () => {
     const confirmDelete = window.confirm('Are you sure you want to delete this user?'); // Add confirmation prompt
     if (!confirmDelete) return; // Exit if not confirmed
 
-    await fetch(`${import.meta.env.VITE_API_URL}/user/${userEmail}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/user/${userEmail}`, {
       method: 'DELETE',
     });
     setUsers(users.filter(user => user.email !== userEmail));

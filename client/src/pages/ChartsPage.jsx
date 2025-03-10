@@ -40,8 +40,8 @@ const ChartsPage = () => {
     const fetchData = async () => {
       try {
         const [productResponse, billResponse] = await Promise.all([
-          fetch(`${import.meta.env.VITE_API_URL}/product/`),
-          fetch(`${import.meta.env.VITE_API_URL}/bill/`)
+          fetch(`${import.meta.env.VITE_API_URL}/api/product/`),
+          fetch(`${import.meta.env.VITE_API_URL}/api/bill/`)
         ]);
 
         const productResult = await productResponse.json();

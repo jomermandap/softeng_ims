@@ -57,7 +57,7 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
   const handleSubmit = async () => {
     if (!product) {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/product/add`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/product/add`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

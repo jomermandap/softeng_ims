@@ -87,7 +87,7 @@ const BillGenerationDialog = ({
     if (!billDetails) return;
     setSaving(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/bill/create`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/bill/create`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
