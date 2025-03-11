@@ -194,7 +194,7 @@ const AdvancedReports = () => {
                         Excel Report
                       </Typography>
                       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                        Download detailed product data in Excel format with formatted tables and sheets
+                        Download detailed product data in Excel format with formatted Furnitures and sheets
                       </Typography>
                     </CardContent>
                     <CardActions sx={{ p: 4, pt: 0 }}>
@@ -298,7 +298,7 @@ const AdvancedReports = () => {
                         PDF Report
                       </Typography>
                       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                        Generate comprehensive PDF report with formatted tables and charts
+                        Generate comprehensive PDF report with formatted Furnitures and charts
                       </Typography>
                     </CardContent>
                     <CardActions sx={{ p: 4, pt: 0 }}>

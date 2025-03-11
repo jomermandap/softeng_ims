@@ -56,9 +56,10 @@ const InventorySearchFilter = ({
             sx={{ borderRadius: 3 }}
           >
             <MenuItem value="all">All Categories</MenuItem>
-            <MenuItem value="Tables">Tables</MenuItem>
-            <MenuItem value="Chairs">Chairs</MenuItem>
-            <MenuItem value="Miscellaneous">Miscellaneous</MenuItem>
+            <MenuItem value="Furnitures">Furnitures</MenuItem>
+            <MenuItem value="Industrial">Industrial</MenuItem>
+            <MenuItem value="Gardening">Gardening</MenuItem>
+            <MenuItem value="Others">Others</MenuItem>
           </Select>
         </FormControl>
       </Stack>

@@ -181,19 +181,19 @@ const Inventory = () => {
   //Category Colors
   const getCategoryStyles = (category) => {
     const categoryColors = {
-      Miscellaneous: {
+      Gardening: {
         background: alpha(theme.palette.primary.main, 0.1),
         text: theme.palette.primary.dark,
       },
-      Chairs: {
+      Industrial: {
         background: alpha(theme.palette.success.main, 0.1),
         text: theme.palette.success.dark,
       },
-      Tables: {
+      Furnitures: {
         background: alpha(theme.palette.warning.main, 0.1),
         text: theme.palette.warning.dark,
       },
-      Accessories: {
+      Others: {
         background: alpha(theme.palette.info.main, 0.1),
         text: theme.palette.info.dark,
       },
@@ -324,9 +324,10 @@ const Inventory = () => {
               }}
             >
               <MenuItem value="all">All Categories</MenuItem>
-              <MenuItem value="Tables">Tables</MenuItem>
-              <MenuItem value="Chairs">Chairs</MenuItem>
-              <MenuItem value="Miscellaneous">Miscellaneous</MenuItem>
+              <MenuItem value="Furnitures">Furnitures</MenuItem>
+              <MenuItem value="Industrial">Industrial</MenuItem>
+              <MenuItem value="Gardening">Gardening</MenuItem>
+              <MenuItem value="Others">Others</MenuItem>
             </Select>
           </FormControl>
           <IconButton 

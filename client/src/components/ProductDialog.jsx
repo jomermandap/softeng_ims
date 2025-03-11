@@ -150,16 +150,55 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
               margin="normal"
             />
 
-            <TextField
-              name="sku"
-              label="SKU"
-              value={formData.sku}
-              onChange={handleChange}
-              fullWidth
-              required
-              variant="outlined"
-              placeholder="Enter SKU"
-            />
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'flex-start' }}>
+              <TextField
+                name="sku"
+                label="SKU"
+                value={formData.sku}
+                onChange={handleChange}
+                fullWidth
+                required
+                variant="outlined"
+                placeholder="Enter SKU"
+              />
+              {/* Generate unique product id */}
+              <Button
+                variant="outlined"
+                size="medium"
+                sx={{ 
+                  mt: 2,
+                  minWidth: 'auto',
+                  borderRadius: 2,
+                  textTransform: 'none'
+                }}
+                onClick={async () => {
+                  const generateSKU = () => {
+                    const randomNumbers = Math.floor(Math.random() * 90000 + 10000);
+                    const randomLetters = Math.random().toString(36).substring(2, 6).toUpperCase();
+                    return `ID${randomNumbers}-${randomLetters}`;
+                  };
+
+                  let isUnique = false;
+                  let newSKU;
+
+                  while (!isUnique) {
+                    newSKU = generateSKU();
+                    try {
+                      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/product/check-sku/${newSKU}`);
+                      const data = await response.json();
+                      isUnique = !data.exists;
+                    } catch (error) {
+                      console.error('Error checking SKU:', error);
+                      break;
+                    }
+                  }
+
+                  setFormData(prev => ({ ...prev, sku: newSKU }));
+                }}
+              >
+                Generate
+              </Button>
+            </Box>
 
             <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 3 }}>
               <TextField
@@ -222,9 +261,10 @@ const ProductDialog = ({ open, onClose, product, onSave }) => {
                 onChange={handleChange}
                 label="Category"
               >
-                <MenuItem value="Tables">Tables</MenuItem>
-                <MenuItem value="Chairs">Chairs</MenuItem>
-                <MenuItem value="Miscellaneous">Miscellaneous</MenuItem>
+                <MenuItem value="Furnitures">Furnitures</MenuItem>
+                <MenuItem value="Industrial">Industrial</MenuItem>
+                <MenuItem value="Gardening">Gardening</MenuItem>
+                <MenuItem value="Others">Others</MenuItem>
               </Select>
             </FormControl>
           </Box>
