@@ -13,7 +13,6 @@ This project is a **Real-Time Inventory Management System** designed to track an
 - Low-stock alerts for products.
 - Generate stock movement and sales reports.
 - Role management for users (add/edit/delete employees).
-- AI-powered inventory recommendations and product bundling suggestions.
 
 ### Employee Features:
 - View inventory list with stock levels.
